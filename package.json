@@ -1,0 +1,22 @@
+{
+  "name": "augur_foundry",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yashnaman/augur_foundry.git"
+  },
+  "keywords": [
+    "augur"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yashnaman/augur_foundry/issues"
+  },
+  "homepage": "https://github.com/yashnaman/augur_foundry#readme"
+}
