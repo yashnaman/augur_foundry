@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/yashnaman/augur_foundry/issues"
   },
-  "homepage": "https://github.com/yashnaman/augur_foundry#readme"
+  "homepage": "https://github.com/yashnaman/augur_foundry#readme",
+  "dependencies": {
+    "@openzeppelin/test-helpers": "^0.5.6",
+    "web3": "^1.2.11"
+  }
 }
