@@ -20,7 +20,12 @@
   },
   "homepage": "https://github.com/yashnaman/augur_foundry#readme",
   "dependencies": {
+    "@openzeppelin/contracts": "^3.1.0",
     "@openzeppelin/test-helpers": "^0.5.6",
+    "@truffle/contract": "^4.2.20",
     "web3": "^1.2.11"
+  },
+  "devDependencies": {
+    "eth-gas-reporter": "^0.2.17"
   }
 }
