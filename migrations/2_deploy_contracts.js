@@ -58,9 +58,6 @@ module.exports = async function (deployer, networks) {
   markets[0].augurFoundryAddress = augurFoundry.address;
   // await deployer.deploy(AugurFoundry);
   //I want to write this somewhere that can be used after by the UI
-  fs.writeFile("markets.json", JSON.stringify(markets), function (err) {
-    if (err) throw err;
-  });
 
   for (i in markets) {
     let names = [
@@ -71,8 +68,16 @@ module.exports = async function (deployer, networks) {
     let tokenIds = await getYesNoTokenIds(markets[i].address);
     await augurFoundry.newERC20Wrappers(tokenIds, names, symbols);
 
-    console.log(await augurFoundry.wrappers(tokenIds[0]));
+    //add these tokenAddresses to the markets json file
+    markets[i].NoTokenAddress = await augurFoundry.wrappers(tokenIds[0]);
+    markets[i].YesTokenAddress = await augurFoundry.wrappers(tokenIds[1]);
+
+    console.log(await augurFoundry.wrappers(tokenIds[1]));
   }
+
+  fs.writeFile("markets.json", JSON.stringify(markets), function (err) {
+    if (err) throw err;
+  });
 
   //we will also finalize two markets to make the tests work
 };

@@ -15,7 +15,8 @@ const addresses = require("../environment.json").addresses;
 const markets = require("../markets.json");
 
 const augurFoundry = new web3.eth.Contract(
-  contracts["AugurFoundry.sol"].AugurFoundry.abi
+  contracts["AugurFoundry.sol"].AugurFoundry.abi,
+  markets[0].augurFoundryAddress
 );
 
 const universe = new web3.eth.Contract(
@@ -25,6 +26,10 @@ const universe = new web3.eth.Contract(
 const augur = new web3.eth.Contract(
   contracts["Augur.sol"].Augur.abi,
   addresses.Augur
+);
+const timeControlled = new web3.eth.Contract(
+  contracts["TimeControlled.sol"].TimeControlled.abi,
+  addresses.TimeControlled
 );
 
 const erc20 = new web3.eth.Contract(contracts["Cash.sol"].Cash.abi);
@@ -40,6 +45,9 @@ const shareToken = new web3.eth.Contract(
 );
 const market = new web3.eth.Contract(
   contracts["reporting/Market.sol"].Market.abi
+);
+const disputeWindow = new web3.eth.Contract(
+  contracts["reporting/DisputeWindow.sol"].DisputeWindow.abi
 );
 
 const with18Decimals = function (amount) {
@@ -152,15 +160,125 @@ const sellCompleteSets = async function (
     )
     .send({ from: account });
 };
+const wrapMultipleTokens = async function (tokenIds, account, amount) {
+  let isApprovedForAllToAugurFoundry = await shareToken.methods
+    .isApprovedForAll(account, augurFoundry.options.address)
+    .call();
+  if (!isApprovedForAllToAugurFoundry) {
+    await shareToken.methods
+      .setApprovalForAll(augurFoundry.options.address, true)
+      .send({ from: account });
+  }
+  console.log("before Wrapping");
+  await augurFoundry.methods
+    .wrapMultipleTokens(tokenIds, account, amount)
+    .send({ from: account });
+};
+
+const unWrapMultipleTokens = async function (tokenIds, account, amount) {
+  await augurFoundry.methods
+    .unWrapMultipleTokens(tokenIds, amount)
+    .send({ from: account });
+};
+const createYesNoWrappersForMarket = async function (marketAddress, account) {
+  let names = [
+    markets[0].extraInfo.description + ": NO",
+    markets[0].extraInfo.description + ": YES",
+  ];
+  let symbols = ["NO" + 1, "YES" + 1];
+  let tokenIds = await getYesNoTokenIds(marketAddress);
+  console.log("creating wrappers");
+  await augurFoundry.methods
+    .newERC20Wrappers(tokenIds, names, symbols)
+    .send({ from: account });
+
+  //add these tokenAddresses to the markets json file
+  let wrappers = [];
+  wrappers.push(await augurFoundry.methods.wrappers(tokenIds[0]).call());
+  wrappers.push(await augurFoundry.methods.wrappers(tokenIds[1]).call());
+
+  console.log(await augurFoundry.methods.wrappers(tokenIds[1]).call());
+  return wrappers;
+};
+const endMarket = async function (
+  marketAddress,
+  marketReporter,
+  winningOutcome
+) {
+  market.options.address = marketAddress;
+  console.log((await time.latest()).toString());
+
+  let payouts = [0, 0, 0];
+  payouts[winningOutcome] = 1000;
+
+  //go to the future
+
+  await timeControlled.methods
+    .incrementTimestamp(3600 * 30)
+    .send({ from: marketReporter });
+
+  console.log("doing report");
+  //do the initial report
+  await market.methods
+    .doInitialReport(payouts, "some", 0)
+    .send({ from: marketReporter });
+  //The initialReport is done
+  // console.log(await market.methods.isFinalized().call());
+
+  //get hold of dispute window
+  disputeWindow.options.address = await market.methods
+    .getDisputeWindow()
+    .call();
+
+  // console.log(await disputeWindow.methods.getStartTime().call());
+  // console.log(await disputeWindow.methods.getEndTime().call());
+  // console.log(await disputeWindow.methods.isOver().call());
+  // console.log(await disputeWindow.methods.duration().call());
+  // console.log("not incresead" + (await disputeWindow.methods.isOver().call()));
+  await timeControlled.methods
+    .incrementTimestamp(3600 * 50)
+    .send({ from: marketReporter });
+  console.log(
+    "timestamo incresead" + (await disputeWindow.methods.isOver().call())
+  );
+
+  await market.methods.finalize().send({ from: marketReporter });
+  console.log(await market.methods.isFinalized().call());
+};
+
+const claimTradingProceeds = async function (marketAddress, account) {
+  //lat arg is for fingerprint that has something to do with affiliate fees
+  await shareTokenApproveForAll(account, augur.options.address);
+  console.log("claiming trading proceeds");
+  await shareToken.methods
+    .claimTradingProceeds(marketAddress, account, web3.utils.fromAscii(""))
+    .send({ from: account });
+  let tokenIds = await getYesNoTokenIds(marketAddress);
+  console.log("token balances (should be zero)");
+  for (i in tokenIds) {
+    console.log((await getBlanceOfShareToken(account, tokenIds[0])).toString());
+  }
+  console.log("cash balance");
+  console.log((await getBalanceOfERC20(cash, account)).toString());
+};
+
+const getCashFromFaucet = async function (account, amount) {
+  console.log("getting cash from faucet");
+  await cash.methods.faucet(amount).send({ from: account });
+};
 const shareTokenApproveForAll = async function (account, operator) {
   let isApprovedForAllToAugurFoundry = await shareToken.methods
     .isApprovedForAll(account, operator)
     .call();
   if (!isApprovedForAllToAugurFoundry) {
+    console.log("approving shareTokens");
     await shareToken.methods
       .setApprovalForAll(operator, true)
       .send({ from: account });
   }
+};
+const getBlanceOfShareToken = async function (address, tokenId) {
+  return new BN(await shareToken.methods.balanceOf(address, tokenId).call());
 };
 const getLatestMarket = async function () {
   let event = await augur.getPastEvents("MarketCreated", {
@@ -187,10 +305,16 @@ const getYesNoTokenIds = async function (yesNoMarketAddress) {
 module.exports = {
   buyCompleteSets: buyCompleteSets,
   sellCompleteSets: sellCompleteSets,
+  wrapMultipleTokens: wrapMultipleTokens,
+  unWrapMultipleTokens: unWrapMultipleTokens,
   createYesNoMarket: createYesNoMarket,
   getYesNoTokenIds: getYesNoTokenIds,
   shareToken: shareToken,
   shareTokenApproveForAll: shareTokenApproveForAll,
   getBalanceOfERC20: getBalanceOfERC20,
   getTokenId: getTokenId,
+  endMarket: endMarket,
+  claimTradingProceeds: claimTradingProceeds,
+  getCashFromFaucet: getCashFromFaucet,
+  createYesNoWrappersForMarket: createYesNoWrappersForMarket,
 };
