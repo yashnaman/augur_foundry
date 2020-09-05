@@ -1,3 +1,8 @@
+const Web3 = require("web3");
+const provider = new Web3.providers.HttpProvider("http://127.0.0.1:8545");
+
+const web3 = new Web3(provider);
+
 const { BN, time, constants } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 
@@ -7,6 +12,11 @@ const AugurFoundry = artifacts.require("AugurFoundry");
 //the goal here is to test all the function that will be available to the front end
 const contracts = require("../contracts.json").contracts;
 const addresses = require("../environment.json").addresses;
+const markets = require("../markets.json");
+
+const augurFoundry = new web3.eth.Contract(
+  contracts["AugurFoundry.sol"].AugurFoundry.abi
+);
 
 const universe = new web3.eth.Contract(
   contracts["reporting/Universe.sol"].Universe.abi,
@@ -43,7 +53,7 @@ const outComes = [0, 1, 2];
 // Object.freeze(outComes);
 
 //Make below function availbe in a file as a module
-const createYesNoMarket = async function (marketCreator) {
+const createYesNoMarket = async function (marketCreator, marketExtraInfo) {
   const repAddress = await universe.methods.getReputationToken().call();
   // console.log(repAddress);
   repToken.options.address = repAddress;
@@ -68,7 +78,8 @@ const createYesNoMarket = async function (marketCreator) {
   let affiliateValidator = ZERO_ADDRESS;
   let affiliateFeeDivisor = 0;
   let designatedReporterAddress = marketCreator;
-  let extraInfo = "none";
+  // let extraInfo = "none";
+  let extraInfo = JSON.stringify(marketExtraInfo);
   console.log("Before Market Creation");
   await universe.methods
     .createYesNoMarket(
@@ -141,7 +152,16 @@ const sellCompleteSets = async function (
     )
     .send({ from: account });
 };
-
+const shareTokenApproveForAll = async function (account, operator) {
+  let isApprovedForAllToAugurFoundry = await shareToken.methods
+    .isApprovedForAll(account, operator)
+    .call();
+  if (!isApprovedForAllToAugurFoundry) {
+    await shareToken.methods
+      .setApprovalForAll(operator, true)
+      .send({ from: account });
+  }
+};
 const getLatestMarket = async function () {
   let event = await augur.getPastEvents("MarketCreated", {
     fromBlock: "latest",
@@ -151,15 +171,26 @@ const getLatestMarket = async function () {
   return event[0].returnValues.market;
 };
 const getBalanceOfERC20 = async function (token, address) {
-  return await token.methods.balanceOf(address).call();
+  return new BN(await token.methods.balanceOf(address).call());
 };
 //NOTE: figure out a way to do this wothout making a call to the blockchain
 const getTokenId = async function (marketAddress, outcome) {
   return await shareToken.methods.getTokenId(marketAddress, outcome).call();
+};
+const getYesNoTokenIds = async function (yesNoMarketAddress) {
+  let tokenIds = [];
+  tokenIds.push(await getTokenId(yesNoMarketAddress, OUTCOMES.NO));
+  tokenIds.push(await getTokenId(yesNoMarketAddress, OUTCOMES.YES));
+  return tokenIds;
 };
 
 module.exports = {
   buyCompleteSets: buyCompleteSets,
   sellCompleteSets: sellCompleteSets,
   createYesNoMarket: createYesNoMarket,
+  getYesNoTokenIds: getYesNoTokenIds,
+  shareToken: shareToken,
+  shareTokenApproveForAll: shareTokenApproveForAll,
+  getBalanceOfERC20: getBalanceOfERC20,
+  getTokenId: getTokenId,
 };
