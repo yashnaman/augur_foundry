@@ -1,6 +1,6 @@
 //TODO
 const Web3 = require("web3");
-const fs = require("fs");
+const fs = require("fs").promises;
 
 const {
   createYesNoMarket,
@@ -75,9 +75,7 @@ module.exports = async function (deployer, networks) {
     console.log(await augurFoundry.wrappers(tokenIds[1]));
   }
 
-  fs.writeFile("markets.json", JSON.stringify(markets), function (err) {
-    if (err) throw err;
-  });
+  await fs.writeFile("markets.json", JSON.stringify(markets));
 
   //we will also finalize two markets to make the tests work
 };

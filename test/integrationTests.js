@@ -15,6 +15,8 @@ const {
   unWrapMultipleTokens,
   wrapMultipleTokens,
   createYesNoWrappersForMarket,
+  endMarket,
+  claimTradingProceeds,
 } = require("../scripts/utils");
 
 const markets = require("../markets.json");
@@ -89,29 +91,16 @@ contract("Intergration test", function (accounts) {
 
     await createYesNoWrappersForMarket(market.options.address, marketCreator);
     // console.log(market.options.address);
-    //deploy erc20s for NO/YES share of the market
-    // this.augurFoundry = await AugurFoundry.new(shareToken.options.address);
-
-    // let tokenIds = await shareToken.methods
-    //   .getTokenIds(market.options.address, outComes)
-    //   .call();
-    // let tokenIds = await getYesNoTokenIds(market.options.address);
-    // let names = ["TestNo", "TSTNO"];
-    // let symbols = ["TestYes", "TSTYES"];
-    // await this.augurFoundry.newERC20Wrappers(tokenIds, names, symbols);
-
-    // console.log(tokenIds);
-    // console.log(tokenIds.splice(0, 2));
-    // await this.augurFoundry.newERC20Wrappers(
-    //   tokenIds.splice(0, 1), //don't wrap invalid shares
-    //   ["", ""],
-    //   ["", ""]
-    // );
   });
   //lets check market's info
   it("checking market info", async function () {
-    console.log(await market.methods.getNumTicks().call());
-    console.log(await market.methods.getNumberOfOutcomes().call());
+    //since it is a yes/no market
+    expect(await market.methods.getNumTicks().call()).to.be.bignumber.equal(
+      "1000"
+    ); //in v2 these are 1000 instead of 100
+    expect(
+      await market.methods.getNumberOfOutcomes().call()
+    ).to.be.bignumber.equal("3"); //INVALID/YES/NO
   });
   //lets test the buy complete shares
   it("should be able to buy complete shares", async function () {
@@ -165,6 +154,7 @@ contract("Intergration test", function (accounts) {
       await cash.methods
         .faucet(amount.mul(numTicks).toString())
         .send({ from: testAccount });
+      //await getCashFromFaucet(testAccount, amount.mul(numTicks));
 
       //add revert test when the balance is less than amount * numticks
       await buyCompleteSets(market.options.address, testAccount, amount);
@@ -264,6 +254,71 @@ contract("Intergration test", function (accounts) {
         amount,
         web3.utils.fromAscii("")
       );
+    });
+  });
+  //so we need unwrap users tokens before redeeming it
+  //otherwise there can be case where user has some wrapped and some unwrapped and only unwrapped tokens will be redeemable for DAI
+  describe("should be able to claim winning proceeds", async function () {
+    const amount = THOUSAND;
+    var cashBalanceTestAccount;
+    var cashBalanceTestAccountAfter;
+    var balanceOfERC1155s = [];
+    var balanceOfERC1155sAfter = [];
+    beforeEach(async function () {
+      //end the market
+      let numTicks = new BN(await market.methods.getNumTicks().call());
+
+      //to sell you to buy it first
+      await getCashFromFaucet(testAccount, amount.mul(numTicks));
+
+      //add revert test when the balance is less than amount * numticks
+      await buyCompleteSets(market.options.address, testAccount, amount);
+      balanceOfERC1155s = [];
+      for (outcome in outComes) {
+        tokenId = await getTokenId(market.options.address, outcome);
+        balanceOfERC1155s.push(
+          await getBlanceOfShareToken(testAccount, tokenId)
+        );
+      }
+      console.log(balanceOfERC1155s);
+
+      cashBalanceTestAccount = await getBalanceOfERC20(cash, testAccount);
+      //2 means yes outcome wins
+      await endMarket(market.options.address, marketCreator, 2);
+    });
+    afterEach(async function () {
+      balanceOfERC1155sAfter = [];
+      for (outcome in outComes) {
+        tokenId = await getTokenId(market.options.address, outcome);
+        let balance = await getBlanceOfShareToken(testAccount, tokenId);
+        balanceOfERC1155sAfter.push(balance);
+        //every thing just got sold for the cash
+        expect(balance).to.be.bignumber.equal("0");
+      }
+      console.log(balanceOfERC1155sAfter);
+
+      cashBalanceTestAccountAfter = await getBalanceOfERC20(cash, testAccount);
+      // console.log(cashBalanceTestAccountAfter);
+      let delta = cashBalanceTestAccountAfter.sub(cashBalanceTestAccount);
+      let numTicks = 1000;
+      //fees = 10%
+      //Here there are some fees being deducted thus the constanst 100 is the fees(10%)
+      //NOTE: ADD the exact test here
+      // for (outcome in outComes) {
+      //   expect(delta).to.be.bignumber.equal(
+      //     new BN(balanceOfERC1155s[outcome])
+      //       .mul(new BN(numTicks))
+      //       .sub(with18Decimals(new BN(100)))
+      //   );
+      // }
+      console.log(delta.toString());
+    });
+    it("when tokens are not wrapped and market is finalized", async function () {
+      //wrap them
+      let tokenIds = await getYesNoTokenIds(market.options.address);
+      //need to give approval to the augur foundry contract
+      await wrapMultipleTokens(tokenIds, testAccount, amount);
+      await claimTradingProceeds(market.options.address, testAccount);
     });
   });
 });

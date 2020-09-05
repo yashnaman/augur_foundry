@@ -247,13 +247,63 @@ const endMarket = async function (
 };
 
 const claimTradingProceeds = async function (marketAddress, account) {
-  //lat arg is for fingerprint that has something to do with affiliate fees
-  await shareTokenApproveForAll(account, augur.options.address);
-  console.log("claiming trading proceeds");
-  await shareToken.methods
-    .claimTradingProceeds(marketAddress, account, web3.utils.fromAscii(""))
-    .send({ from: account });
+  //here if the user has wrapped tokens then we need to call the augur foundry contract to unwrap them
+  //check if market has finalized
+  market.options.address = marketAddress;
+  let isMarketFinalized = await market.methods.isFinalized().call();
+
+  if (!isMarketFinalized) {
+    throw new Error("Market is not finalized try selling complete shares");
+  }
   let tokenIds = await getYesNoTokenIds(marketAddress);
+  let erc20Wrapper = erc20;
+  //NOTE : Add a check to check whether they are wrapped
+  //Right now it assumes that they are
+
+  //get the winning outcome
+  let noPayout = new BN(
+    await market.methods.getWinningPayoutNumerator(OUTCOMES.NO).call()
+  );
+  let balance = new BN(0);
+
+  if (noPayout.cmp(new BN(0)) == 0) {
+    //that means that yes outcome won
+    //check if its balance for the user is greater than zero
+    console.log("winning outcome is YES");
+    erc20Wrapper.options.address = await augurFoundry.methods
+      .wrappers(tokenIds[1])
+      .call();
+    balance = await getBalanceOfERC20(erc20Wrapper, account);
+  } else {
+    //that means that no outcome won
+    //check if its balance for the user is greater than zero
+    console.log("winning outcome is NO");
+    erc20Wrapper.options.address = await augurFoundry.methods
+      .wrappers(tokenIds[0])
+      .call();
+    balance = await getBalanceOfERC20(erc20Wrapper, account);
+  }
+
+  console.log("balance of yes or no" + balance.toString());
+  //now if the token balance is greator than zero than ask augurfoundry to unwrap+claim
+  if (balance.cmp(new BN(0)) != 0) {
+    console.log("claiming trading proceeds wrapped");
+    await augurFoundry.methods
+      .claimTradingProceeds(
+        market.options.address,
+        account,
+        web3.utils.fromAscii("")
+      )
+      .send({ from: account });
+  } else {
+    //last arg is for fingerprint that has something to do with affiliate fees(NOTE: what exactly?)
+    await shareTokenApproveForAll(account, augur.options.address);
+    console.log("claiming trading proceeds not wrapped");
+    await shareToken.methods
+      .claimTradingProceeds(marketAddress, account, web3.utils.fromAscii(""))
+      .send({ from: account });
+  }
+
   console.log("token balances (should be zero)");
   for (i in tokenIds) {
     console.log((await getBlanceOfShareToken(account, tokenIds[0])).toString());
