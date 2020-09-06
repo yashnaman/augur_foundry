@@ -62,7 +62,6 @@ export default class App extends PureComponent {
     }
 
     initData(){
-      console.log("here")
       const {web3} = this.state.web3Provider;
       const daiInstance = new web3.eth.Contract(
         erc20,
@@ -72,7 +71,7 @@ export default class App extends PureComponent {
       this.setState({daiInstance:daiInstance})
     }
 
-    getBalance(){
+    getBalance(address){
 
       return 100;
     }
@@ -86,13 +85,28 @@ export default class App extends PureComponent {
       const weiAmount = web3.utils.toWei(amount);
       const daiBalance = await daiInstance.methods.balanceOf(accounts[0]).call();
 
-       
+        // daiInstance.methods
+        //   .swapWithOldToken(a)
+        //   .send({
+        //     from: address[0],
+        //     value: 0,
+        // }).on('transactionHash', (hash) => {
+            
+        // }).on('receipt', (receipt) => {
+            
+        // }).on("error", (error) => {
+            
+        // })
       
     }
 
-    checkDaiContion(){
+    wrapShare(address){
+      alert(address);
+    }
 
-      return false;
+    checkDaiContion(address){
+
+      return true;
     }
 
   render() {
@@ -116,7 +130,7 @@ export default class App extends PureComponent {
                     <Row>
                       <Col xs={8}>
                         <Form.Group controlId="exampleForm.ControlInput1">
-                          <Form.Control type="text" name="amount" placeholder="ENTER AMOUNT OF DAI" />
+                          <Form.Control type="text"  name="amount" placeholder="ENTER AMOUNT OF DAI" />
                         </Form.Group>
                       </Col>
                       <Col xs={4}>
@@ -146,24 +160,26 @@ export default class App extends PureComponent {
                               {i.extraInfo.description}
                             </td>
                             <td>
-                              Yes : {this.getBalance()}
+                              Yes : {this.getBalance(i.address)}
                               <br/>
-                              No  : {this.getBalance()}
+                              No  : {this.getBalance(i.address)}
                             </td>
                             <td>
-
-                              <Button variant="danger" type="submit">
-                                WRAP SHARES
-                              </Button>
-                              
-                              <Button variant="secondary" className="m-left" type="submit">
-                                REDEEM DAI
-                              </Button>
-
-                              {this.checkDaiContion() ? 
-                              <Button variant="Success" type="submit">
-                                REDEEM DAI
-                              </Button> : null }
+                            {this.checkDaiContion(i.address)?
+                              <span>
+                                <Button variant="danger" type="submit" onClick={(e)=>this.wrapShare(i.address)}>
+                                  WRAP SHARES
+                                </Button>
+                                
+                                <Button variant="secondary" className="m-left" type="submit">
+                                  REDEEM DAI
+                                </Button>
+                              </span>
+                               :
+                                <Button variant="success" type="submit">
+                                  UNWRAP
+                                </Button> 
+                                }
 
                             </td>
                           </tr>
