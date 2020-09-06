@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 
 import Row from 'react-bootstrap/Row';
+import Table from 'react-bootstrap/Table';
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Jumbotron from 'react-bootstrap/Jumbotron';
@@ -71,6 +72,11 @@ export default class App extends PureComponent {
       this.setState({daiInstance:daiInstance})
     }
 
+    getBalance(){
+
+      return 100;
+    }
+
     async mintDaiForm(e){
       e.preventDefault();
       const {web3,accounts} = this.state.web3Provider;
@@ -82,6 +88,11 @@ export default class App extends PureComponent {
 
        
       
+    }
+
+    checkDaiContion(){
+
+      return false;
     }
 
   render() {
@@ -120,12 +131,48 @@ export default class App extends PureComponent {
                 </Row>
 
                 <h3 className="header">MY INVETORY</h3>
-              <Row>
-                <Col xs={10}>
-                    <Jumbotron className="dropdownMarket" >
-                    </Jumbotron>
-                </Col>
-              </Row>
+                <Table striped bordered hover>
+                  <thead>
+                      <tr>
+                        <th>Market</th>
+                        <th>Holding</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {markets.map(i => (
+                          <tr>
+                            <td>
+                              {i.extraInfo.description}
+                            </td>
+                            <td>
+                              Yes : {this.getBalance()}
+                              <br/>
+                              No  : {this.getBalance()}
+                            </td>
+                            <td>
+
+                              <Button variant="danger" type="submit">
+                                WRAP SHARES
+                              </Button>
+                              
+                              <Button variant="secondary" className="m-left" type="submit">
+                                REDEEM DAI
+                              </Button>
+
+                              {this.checkDaiContion() ? 
+                              <Button variant="Success" type="submit">
+                                REDEEM DAI
+                              </Button> : null }
+
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  
+                
+                </Table>
+             
           </Jumbotron>
           
             
