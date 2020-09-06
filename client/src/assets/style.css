@@ -1,0 +1,29 @@
+body{
+    color: #ffffff;
+    background-color: #0E0E0E;
+}
+
+/* .mainContainer{
+    padding: 0;
+} */
+.mainContainer .jumbotron{
+    color: #ffffff;
+    background-color: #000000;
+    
+}
+
+.dropdownMarket{
+    border-radius: 0;
+    border:1px solid #0E0E0E;
+    background-color: #161616 !important;
+    margin-top: 35px;
+}
+
+.mintShare {
+    background: #2cb3a7;
+    border: #2cb3a7;
+}
+
+.mintShare:hover{
+    background: #2cb3a7;
+}
