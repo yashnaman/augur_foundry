@@ -27,6 +27,7 @@ export default class App extends PureComponent {
         accounts: [],
       },
       daiInstance: null,
+      listData:null,
     };
   }
 
@@ -77,30 +78,37 @@ export default class App extends PureComponent {
   async initData() {
     const { web3 } = this.state.web3Provider;
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
+
     const cash = new web3.eth.Contract(
       contracts.contracts["Cash.sol"].Cash.abi,
       environment.addresses.Cash
     );
+
     const shareToken = new web3.eth.Contract(
       contracts.contracts["reporting/ShareToken.sol"].ShareToken.abi,
       environment.addresses.ShareToken
     );
+
     const market = new web3.eth.Contract(
       contracts.contracts["reporting/Market.sol"].Market.abi
     );
+
     const augurFoundry = new web3.eth.Contract(
       contracts.contracts["AugurFoundry.sol"].AugurFoundry.abi,
       markets[0].augurFoundryAddress
     );
+
     const universe = new web3.eth.Contract(
       contracts.contracts["reporting/Universe.sol"].Universe.abi,
       environment.addresses.Universe
     );
+
     const augur = new web3.eth.Contract(
       contracts.contracts["Augur.sol"].Augur.abi,
       environment.addresses.Augur
     );
-    console.log(cash.options.address);
+
+    
     this.setState({
       cash: cash,
       shareToken: shareToken,
@@ -109,12 +117,69 @@ export default class App extends PureComponent {
       augur: augur,
       augurFoundry: augurFoundry,
       OUTCOMES: OUTCOMES,
+    },()=>{
+      this.invetoryInit();
     });
+
+  }
+
+  async invetoryInit(){
+    let listData = [];
+
+    for(let x=0; x < markets.length ;x++){
+      let YN_balance = await this.getYesNoBalancesMarketERC20(markets[x].address)
+      listData.push(
+        <tr>
+          <td>{markets[x].extraInfo.description}</td>
+          <td>
+            Yes : {YN_balance.yesTokenBalance.toString()}
+            <br />
+            No : {YN_balance.noTokenBalance.toString()}
+          </td>
+        <td>
+          {/* {this.checkDaiCondition(i.address) ? (
+            <span>
+              <Button
+                variant="danger"
+                type="submit"
+                onClick={(e) => this.wrapShare(i.address)}
+              >
+                WRAP SHARES
+              </Button>
+
+              <Button
+                variant="secondary"
+                className="m-left"
+                type="submit"
+                onClick={(e) => this.redeemDAI(i.address)}
+              >
+                REDEEM DAI
+              </Button>
+            </span>
+          ) : (
+            <Button
+              variant="success"
+              type="submit"
+              onClick={(e) => this.unwrapShares(i.address)}
+            >
+              UNWRAP
+            </Button>
+            )} */}
+             </td>
+          </tr>
+          
+
+      )
+
+    }
+    //console.log(listData)
+    this.setState({listData:listData})
+  
   }
 
   getBalance(marketAddress) {
-    //This is not working either
-    //Make this work
+    // This is not working either
+    // Make this work
     // let {
     //   yesTokenBalance,
     //   noTokenBalance,
@@ -128,6 +193,7 @@ export default class App extends PureComponent {
     const { web3, accounts } = this.state.web3Provider;
 
     const { cash, shareToken, market, augur } = this.state;
+
     // const marketIds = e.target.elements.marketIds.value;
     const marketAddress = e.target.elements.marketIds.value;
     let amount = e.target.elements.amount.value;
@@ -179,7 +245,6 @@ export default class App extends PureComponent {
         .isApprovedForAll(accounts[0], augurFoundry.options.address)
         .call();
       if (!isApprovedForAllToAugurFoundry) {
-        console.log("approving shareTokens");
         await shareToken.methods
           .setApprovalForAll(augurFoundry.options.address, true)
           .send({ from: accounts[0] });
@@ -253,9 +318,7 @@ export default class App extends PureComponent {
             .getTokenId(marketAddress, OUTCOMES.YES)
             .call()
         );
-        console.log(tokenIds);
-        console.log(markets[0].YesTokenAddress);
-
+       
         //get the balance of both tokenIds and give the amoun on which is less
         let yesShareBalance = await shareToken.methods
           .balanceOf(accounts[0], tokenIds[1])
@@ -279,16 +342,19 @@ export default class App extends PureComponent {
       }
     }
   }
+
   async getBalanceOfERC20(tokenAddress, account) {
     const { cash } = this.state;
     cash.options.address = tokenAddress;
     return new BN(await cash.methods.balanceOf(account).call());
   }
+
   async isMarketFinalized(marketAddress) {
     const { market } = this.state;
     market.options.address = marketAddress;
     return await market.methods.isFinalized().call();
   }
+
   async unwrapShares(marketAddress) {
     const { accounts } = this.state.web3Provider;
     const { augurFoundry, shareToken, OUTCOMES } = this.state;
@@ -311,15 +377,18 @@ export default class App extends PureComponent {
         .send({ from: accounts[0] });
     }
   }
+
   async getYesNoBalancesMarketERC20(marketAddress) {
     const { accounts } = this.state.web3Provider;
     const { shareToken, augurFoundry, OUTCOMES } = this.state;
     console.log("accounts{0}" + accounts[0]);
 
     let tokenIds = [];
+
     tokenIds.push(
       await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
     );
+
     tokenIds.push(
       await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
     );
@@ -428,46 +497,7 @@ export default class App extends PureComponent {
               </tr>
             </thead>
             <tbody>
-              {markets.map((i) => (
-                <tr>
-                  <td>{i.extraInfo.description}</td>
-                  <td>
-                    Yes : {this.getBalance(i.address)}
-                    <br />
-                    No : {this.getBalance(i.address)}
-                  </td>
-                  <td>
-                    {this.checkDaiCondition(i.address) ? (
-                      <span>
-                        <Button
-                          variant="danger"
-                          type="submit"
-                          onClick={(e) => this.wrapShare(i.address)}
-                        >
-                          WRAP SHARES
-                        </Button>
-
-                        <Button
-                          variant="secondary"
-                          className="m-left"
-                          type="submit"
-                          onClick={(e) => this.redeemDAI(i.address)}
-                        >
-                          REDEEM DAI
-                        </Button>
-                      </span>
-                    ) : (
-                      <Button
-                        variant="success"
-                        type="submit"
-                        onClick={(e) => this.unwrapShares(i.address)}
-                      >
-                        UNWRAP
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {this.state.listData}
             </tbody>
           </Table>
         </Jumbotron>
