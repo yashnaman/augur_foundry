@@ -27,10 +27,10 @@ const augur = new web3.eth.Contract(
   contracts["Augur.sol"].Augur.abi,
   addresses.Augur
 );
-const timeControlled = new web3.eth.Contract(
-  contracts["TimeControlled.sol"].TimeControlled.abi,
-  addresses.TimeControlled
-);
+// const timeControlled = new web3.eth.Contract(
+//   contracts["TimeControlled.sol"].TimeControlled.abi,
+//   addresses.TimeControlled
+// );
 
 const erc20 = new web3.eth.Contract(contracts["Cash.sol"].Cash.abi);
 const repToken = erc20;
