@@ -130,7 +130,7 @@ export default class App extends PureComponent {
   async invetoryInit() {
     const { web3 } = this.state.web3Provider;
     let listData = [];
-    console.log(markets);
+    // console.log(markets);
     for (let x = 0; x < markets.length; x++) {
       let YN_balance = await this.getYesNoBalancesMarketERC20(
         markets[x].address
@@ -227,7 +227,7 @@ export default class App extends PureComponent {
         //weiAmount > balance
         //await Promise.reject(new Error("Not Enough balance to buy complete sets"));
         alert(
-          "Not enough cash (get some from this privkey: 0xfae42052f82bed612a724fec3632f325f377120592c75bb78adfcceae6470c5a)"
+          "Not enough cash(DAI)"
         );
         return;
       }
@@ -243,7 +243,7 @@ export default class App extends PureComponent {
           .send({ from: accounts[0] });
       }
       console.log("Before buy complete sets");
-      console.log(marketAddress);
+      // console.log(marketAddress);
       //buy the complete sets
       await shareToken.methods
         .buyCompleteSets(marketAddress, accounts[0], weiAmount.toString())
@@ -275,8 +275,8 @@ export default class App extends PureComponent {
       tokenIds.push(
         await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
       );
-      console.log(tokenIds);
-      console.log(markets[0].YesTokenAddress);
+      // console.log(tokenIds);
+      // console.log(markets[0].YesTokenAddress);
 
       //get the balance of both tokenIds and give the amoun on which is less
       let yesShareBalance = await shareToken.methods
@@ -285,10 +285,10 @@ export default class App extends PureComponent {
       let noShareBalance = await shareToken.methods
         .balanceOf(accounts[0], tokenIds[0])
         .call();
-      console.log(yesShareBalance);
+      // console.log(yesShareBalance);
       let amount =
         yesShareBalance > noShareBalance ? noShareBalance : yesShareBalance;
-      console.log(amount);
+      // console.log(amount);
       console.log("before Wrapping");
       //wrapp all the tokens
       await augurFoundry.methods
@@ -346,10 +346,10 @@ export default class App extends PureComponent {
         let noShareBalance = await shareToken.methods
           .balanceOf(accounts[0], tokenIds[0])
           .call();
-        console.log(yesShareBalance);
+        // console.log(yesShareBalance);
         let amount =
           yesShareBalance > noShareBalance ? noShareBalance : yesShareBalance;
-        console.log(amount);
+        // console.log(amount);
         await shareToken.methods
           .sellCompleteSets(
             marketAddress,
@@ -365,7 +365,7 @@ export default class App extends PureComponent {
   }
 
   async getBalanceOfERC20(tokenAddress, account) {
-    console.log("getBlanecERC20" + account);
+    // console.log("getBlanecERC20" + account);
     const { erc20 } = this.state;
     erc20.options.address = tokenAddress;
     return new BN(await erc20.methods.balanceOf(account).call());
@@ -423,8 +423,8 @@ export default class App extends PureComponent {
       let noTokenAddress = await augurFoundry.methods
         .wrappers(tokenIds[0])
         .call();
-      console.log("yesTOkenAddress" + yesTokenAddress);
-      console.log("accounts{0}" + accounts[0]);
+      // console.log("yesTOkenAddress" + yesTokenAddress);
+      // console.log("accounts{0}" + accounts[0]);
 
       yesTokenBalance = await this.getBalanceOfERC20(
         yesTokenAddress,
@@ -471,8 +471,8 @@ export default class App extends PureComponent {
 
   async checkDAICondition(marketAddress) {
     const { accounts } = this.state.web3Provider;
-    console.log("accounts{0}" + accounts[0]);
-    console.log("marketAddress" + marketAddress);
+    // console.log("accounts{0}" + accounts[0]);
+    // console.log("marketAddress" + marketAddress);
 
     let balances = await this.getYesNoBalancesMarketERC20(marketAddress);
 
