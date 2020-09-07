@@ -10,7 +10,7 @@ import Button from "react-bootstrap/Button";
 import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
 
-import markets from "./markets.json";
+import markets from "./markets-kovan.json";
 import contracts from "./configs/contracts.json";
 import environment from "./configs/environment.json";
 

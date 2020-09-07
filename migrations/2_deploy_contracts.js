@@ -63,10 +63,14 @@ const createYesNoMarket = async function (marketCreator, marketExtraInfo) {
   repToken.options.address = repAddress;
   // console.log(await getBalanceOf(repToken, marketCreator));
   //approve rep token to the augur to be able to create the market
-
-  await repToken.methods
-    .approve(augur.options.address, MAX_UINT256.toString())
-    .send({ from: marketCreator });
+  try {
+    await repToken.methods
+      .approve(augur.options.address, MAX_UINT256.toString())
+      .send({ from: marketCreator });
+  } catch (err) {
+    console.log(err);
+    console.log("error");
+  }
 
   //get the cash for theAccount from faucet method
 
@@ -131,20 +135,20 @@ const ERC20Wrapper = artifacts.require("ERC20Wrapper");
 const AugurFoundry = artifacts.require("AugurFoundry");
 
 module.exports = async function (deployer, networks) {
-  // if ("development" === network) {
-  //   const { provider } = networks[network] || {};
-  //   if (!provider) {
-  //     throw new Error(`Unable to find provider for network: ${network}`);
-  //   }
-  // }
+  // // if ("development" === network) {
+  // //   const { provider } = networks[network] || {};
+  // //   if (!provider) {
+  // //     throw new Error(`Unable to find provider for network: ${network}`);
+  // //   }
+  // // }
 
-  // const web3 = new Web3(provider);
+  // // const web3 = new Web3(provider);
 
-  let accounts = await web3.eth.getAccounts();
-  console.log(accounts);
-
+  // let accounts = await web3.eth.getAccounts();
   // console.log(accounts);
-  // console.log(markets);
+
+  // // console.log(accounts);
+  // // console.log(markets);
 
   for (i in markets) {
     // markets.push({
@@ -159,7 +163,7 @@ module.exports = async function (deployer, networks) {
     console.log("Market:" + markets[i].address);
     // console.log(await getLatestMarket());
   }
-  // console.log(markets);
+  console.log(markets);
 
   // //deploy the augur foundry
 

@@ -63,7 +63,7 @@ module.exports = {
       confirmations: 0,
     },
     kovan: {
-      networkCheckTimeout: 1000000,
+      networkCheckTimeout: 100000,
       provider: () => new PrivateKeyProvider(privateKey, kovanInfuraProvider),
       network_id: 42,
       from: account,
