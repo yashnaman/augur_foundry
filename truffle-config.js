@@ -53,9 +53,14 @@ module.exports = {
     // options below to some value.
     //
     development: {
-      host: "127.0.0.1", // Localhost (default: none)
-      port: 8545, // Standard Ethereum port (default: none)
-      network_id: "*", // Any network (default: none)
+      networkCheckTimeout: 1000000,
+      provider: () =>
+        new PrivateKeyProvider(privateKey, "http://localhost:8545"),
+      network_id: 12346,
+      from: account,
+      gas: 8000000,
+      skipDryRun: true,
+      confirmations: 2,
     },
     kovan: {
       networkCheckTimeout: 1000000,
@@ -64,6 +69,7 @@ module.exports = {
       from: account,
       gas: 8000000,
       skipDryRun: true,
+      confirmations: 2,
     },
     // Another network with more advanced options...
     // advanced: {

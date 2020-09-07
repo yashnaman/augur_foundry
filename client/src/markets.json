@@ -1,37 +1,37 @@
 [
   {
-    "augurFoundryAddress": "0x5bedC97dB21005B32CBC804A546B8b9e99a8AA85",
-    "address": "0xaA66BD394b970E9ac1b69DcDCa36fcE59F9478c2",
+    "augurFoundryAddress": "0xcc4CB4EBBf617c956B833aA0f0C6075532e46a03",
+    "address": "0x44C1bEa8fE6920F63Bd02cfe16C2a7d12A26F332",
     "extraInfo": {
       "categories": ["Politics", "US Politics", "President"],
       "description": "Will DJ win the 2020 U.S. Presidential election?",
       "longDescription": "The winning candidate will have at least 270 electoral votes to win the presidential election.\nThis market is intended to be about a Single Candidate, if this is not the case, this market should settle as 'Invalid'."
     },
-    "YesTokenAddress": "0xFE5Ce719fa5AF8eBBb4B6032f17765e09a206A3f",
-    "NoTokenAddress": "0x073e413b496295Ae75602eefa93fF0a799A98421"
+    "YesTokenAddress": "0xFaaaeF8f4bE05bCF9dF2F36AF47cEDfB1435E5D8",
+    "NoTokenAddress": "0x90DAE912127b202D05e0F2994ef711F0d59B5e95"
   },
   {
-    "address": "0x7E557E37587562b3e50C9B2FAC52d6cc506601a7",
+    "address": "0x485987802f12Fd42c403ded777528D174a33324a",
     "extraInfo": {
       "categories": ["Sports", "Basketball", "NBA"],
       "description": " Will Anthony Davis win the 2019-20 Defensive Player of the Year award?",
       "longDescription": "In the event of an award given to more than 1 player. If the player mentioned in the market is one of the players who wins the award, the market should resolve as Yes.This market is intended to be about a Single Person, if this is not the case, this market should settle as 'Invalid'. If the award in the market question is not awarded for any reason by event expiration, this market should resolve as 'No'."
     },
-    "YesTokenAddress": "0x89fFDab5759669746EF2DBAD7A83cbe89f4D89a9",
-    "NoTokenAddress": "0xAf16CB4be7cBa1adE85F0b71F1e8C3aBc4A59C56"
+    "YesTokenAddress": "0x2C7d90B6F4EbE79Ba6d54563A611e6e4Aff99050",
+    "NoTokenAddress": "0x6cE9695A0796Be9937Fe9cd231EA612B172b37e8"
   },
   {
-    "address": "0xb0DcD833daFE92E11Ac79e9b39b7072c3cC91913",
+    "address": "0x61051A395269ea55A1a30975C6DEb76759A46Bdb",
     "extraInfo": {
       "categories": ["common", "yesNo 1 secondary", "yesNo 1 tertiary"],
       "description": "yesNo description 1",
       "longDescription": "yesNo longDescription 1"
     },
-    "YesTokenAddress": "0x85c10Cc7F028233074074c5BDce667926513B729",
-    "NoTokenAddress": "0x2C2f3bdb3cb08e30d33E68A3BC1b7F1FBf47c661"
+    "YesTokenAddress": "0x50084566631f0d1998A51B46d07fc3EA4bce43D4",
+    "NoTokenAddress": "0xBd8E43Ebe66A72b2C9F1851B1A11b4016BD66BE3"
   },
   {
-    "address": "0x1E147B6b8f5436CbF74FFd7a7373A42D8b5DBfCe",
+    "address": "0xfA193B12b4F764dF9FE95Ef380676Fb33c6A6c40",
     "extraInfo": {
       "categories": [
         "yesNo 2 primary",
@@ -41,7 +41,7 @@
       "description": "yesNo description 2",
       "longDescription": "yesNo longDescription 2"
     },
-    "YesTokenAddress": "0x530d5f8C71adB1C41665Ee59aE267E81486A5962",
-    "NoTokenAddress": "0xd5834804981721f5FE08acAcB1a0f431bba402F8"
+    "YesTokenAddress": "0x3046db135a8948DCa648AFc1Ed76720d7299dA40",
+    "NoTokenAddress": "0xB8bEf4d169164F9c2bc594236Be00C2125aEe00D"
   }
 ]
