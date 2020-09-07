@@ -18,7 +18,7 @@
  *
  */
 
-const PrivateKeyProvider = require("@truffle/hdwallet-provider");
+const PrivateKeyProvider = require("truffle-privatekey-provider");
 const privateKey =
   "0xfae42052f82bed612a724fec3632f325f377120592c75bb78adfcceae6470c5a";
 // const privateKeyProvider = new PrivateKeyProvider(
