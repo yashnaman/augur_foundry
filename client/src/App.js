@@ -393,8 +393,8 @@ export default class App extends PureComponent {
       tokenIds.push(
         await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
       );
-      let amount =
-        yesTokenBalance > noTokenBalance ? noTokenBalance : yesTokenBalance;
+      // let amount =
+      //   yesTokenBalance > noTokenBalance ? noTokenBalance : yesTokenBalance;
       await augurFoundry.methods
         .unWrapMultipleTokens(tokenIds, constants.MAX_UINT256.toString())
         .send({ from: accounts[0] });

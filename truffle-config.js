@@ -60,7 +60,7 @@ module.exports = {
       from: account,
       gas: 8000000,
       skipDryRun: true,
-      confirmations: 2,
+      confirmations: 0,
     },
     kovan: {
       networkCheckTimeout: 1000000,
@@ -69,7 +69,7 @@ module.exports = {
       from: account,
       gas: 8000000,
       skipDryRun: true,
-      confirmations: 2,
+      confirmations: 0,
     },
     // Another network with more advanced options...
     // advanced: {
