@@ -10,7 +10,9 @@ body {
   color: #ffffff;
   background-color: #000000;
 }
-
+.m-left {
+  margin: 10px;
+}
 .dropdownMarket {
   border-radius: 0;
   border: 1px solid #0e0e0e;

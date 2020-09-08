@@ -802,7 +802,7 @@ export default class App extends PureComponent {
             </thead>
             <tbody>
               {this.state.listData == null ? (
-                <span>loading...</span>
+                <span>Loading...</span>
               ) : (
                 this.state.listData
               )}
