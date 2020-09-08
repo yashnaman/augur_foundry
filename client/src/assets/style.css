@@ -1,44 +1,46 @@
-body{
-    color: #ffffff;
-    background-color: #0E0E0E;
+body {
+  color: #ffffff;
+  background-color: #0e0e0e;
 }
 
 /* .mainContainer{
     padding: 0;
 } */
-.mainContainer .jumbotron{
-    color: #ffffff;
-    background-color: #000000;
-    
+.mainContainer .jumbotron {
+  color: #ffffff;
+  background-color: #000000;
 }
 
-.dropdownMarket{
-    border-radius: 0;
-    border:1px solid #0E0E0E;
-    background-color: #161616 !important;
-    margin-top: 35px;
+.dropdownMarket {
+  border-radius: 0;
+  border: 1px solid #0e0e0e;
+  background-color: #161616 !important;
+  margin-top: 35px;
 }
 
 .mintShare {
-    background: #2cb3a7;
-    border: #2cb3a7;
+  background: #2cb3a7;
+  border: #2cb3a7;
 }
 
-.mintShare:hover{
-    background: #2cb3a7;
+.mintShare:hover {
+  background: #2cb3a7;
 }
 
-.table-bordered{
-    color: #ffffff;
-    border-radius: 0;
-    border:1px solid #0E0E0E;
-    background-color: #161616 !important;
-    margin-top: 35px;
+.table-bordered {
+  color: #ffffff;
+  border-radius: 0;
+  border: 1px solid #0e0e0e;
+  background-color: #161616 !important;
+  margin-top: 35px;
 }
-.table-bordered:hover{
-    color: white;
+.table-bordered:hover {
+  color: white;
 }
 
-.m-left{
-    margin-left: 10px;
+.m-left {
+  margin-left: 10px;
+}
+.table-hover tbody tr:hover {
+  color: #fff !important;
 }

@@ -14,6 +14,8 @@ import markets from "./markets-kovan.json";
 import contracts from "./configs/contracts.json";
 import environment from "./configs/environment.json";
 
+import { notification } from "antd";
+import "antd/dist/antd.css";
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -70,20 +72,29 @@ export default class App extends PureComponent {
 
   metaNetwrokChange() {
     this.setState({ web3Provider: metaMaskStore.getWeb3() }, () => {
-      this.initData();
+      // this.initData();
     });
   }
 
   async initData() {
     console.log("initData");
+    // notification.open({
+    //   message: "Please Wait",
+    // });
+
     const { web3 } = this.state.web3Provider;
 
     let chainId = await web3.eth.net.getId();
     console.log(chainId);
     if (chainId != 42) {
-      alert("connect to kovan testnet");
+      this.openNotification(
+        "error",
+        "Wrong Network",
+        "Please connect to Kovan Testnet"
+      );
       return;
     }
+
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
 
     const cash = new web3.eth.Contract(
@@ -133,6 +144,7 @@ export default class App extends PureComponent {
         this.invetoryInit();
       }
     );
+    // notification.destroy();
   }
 
   async invetoryInit() {
@@ -162,7 +174,7 @@ export default class App extends PureComponent {
           <td>
             Yes : {web3.utils.fromWei(yesTokenBalance).toString()}(
             <span
-              style={{ color: "#FFA300" }}
+              style={{ color: "#FFA300", cursor: "pointer" }}
               onClick={async (event) =>
                 this.addTokenToMetamask(yesTokenAddress, x, OUTCOMES.YES)
               }
@@ -173,7 +185,7 @@ export default class App extends PureComponent {
             <br />
             No : {web3.utils.fromWei(noTokenBalance).toString()}(
             <span
-              style={{ color: "#FFA300" }}
+              style={{ color: "#FFA300", cursor: "pointer" }}
               onClick={async (event) =>
                 this.addTokenToMetamask(noTokenAddress, x, OUTCOMES.NO)
               }
@@ -256,7 +268,11 @@ export default class App extends PureComponent {
           //   errorMessage: "There was a problem adding the token.",
           //   message: "",
           // });
-          console.log("error");
+          this.openNotification(
+            "error",
+            "There was an error in adding the custom token in metamask",
+            ""
+          );
           return;
         }
         // this.setState({
@@ -303,7 +319,7 @@ export default class App extends PureComponent {
       if (weiAmount.mul(numTicks).cmp(new BN(balance)) == 1) {
         //weiAmount > balance
         //await Promise.reject(new Error("Not Enough balance to buy complete sets"));
-        alert("Not enough cash(DAI)");
+        this.openNotification("error", "Not Enough DAI(cash) Balance", "");
         return;
       }
 
@@ -313,18 +329,77 @@ export default class App extends PureComponent {
 
       if (weiAmount.mul(numTicks).cmp(new BN(allowance)) == 1) {
         console.log("allowance");
+        this.openNotification(
+          "info",
+          "Aprooving you DAI to before minting new shares",
+          "This is one time transaction"
+        );
         await cash.methods
           .approve(augur.options.address, constants.MAX_UINT256.toString())
-          .send({ from: accounts[0] });
+          .send({ from: accounts[0] })
+          .on("error", (error) => {
+            if (error.message.includes("User denied transaction signature")) {
+              this.openNotification(
+                "error",
+                "User denied Signature",
+                "sign the transaction to be able to execute the transaction"
+              );
+            } else {
+              this.openNotification(
+                "error",
+                "There was an error in executing the transaction",
+                ""
+              );
+            }
+          })
+          .on("receipt", function (receipt) {
+            console.log("Before buy complete sets");
+            shareToken.methods
+              .buyCompleteSets(marketAddress, accounts[0], weiAmount.toString())
+              .send({ from: accounts[0] })
+              .on("error", (error) => {
+                if (
+                  error.message.includes("User denied transaction signature")
+                ) {
+                  this.openNotification(
+                    "error",
+                    "User denied Signature",
+                    "sign the transaction to be able to execute the transaction"
+                  );
+                } else {
+                  this.openNotification(
+                    "error",
+                    "There was an error in executing the transaction",
+                    ""
+                  );
+                }
+              });
+          });
+      } else {
+        this.openNotification("info", "minting shares", "");
+        // console.log(marketAddress);
+        //buy the complete sets
+        shareToken.methods
+          .buyCompleteSets(marketAddress, accounts[0], weiAmount.toString())
+          .send({ from: accounts[0] })
+          .on("error", (error) => {
+            if (error.message.includes("User denied transaction signature")) {
+              this.openNotification(
+                "error",
+                "User denied Signature",
+                "sign the transaction to be able to execute the transaction"
+              );
+            } else {
+              this.openNotification(
+                "error",
+                "There was an error in executing the transaction",
+                ""
+              );
+            }
+          });
       }
-      console.log("Before buy complete sets");
-      // console.log(marketAddress);
-      //buy the complete sets
-      await shareToken.methods
-        .buyCompleteSets(marketAddress, accounts[0], weiAmount.toString())
-        .send({ from: accounts[0] });
     } else {
-      alert("select a market & enter amount ");
+      this.openNotification("error", "Select a Market and Enter amount", "");
     }
     await this.initData();
   }
@@ -339,6 +414,11 @@ export default class App extends PureComponent {
         .isApprovedForAll(accounts[0], augurFoundry.options.address)
         .call();
       if (!isApprovedForAllToAugurFoundry) {
+        this.openNotification(
+          "info",
+          "Approve your share tokens to be able to wrap shares",
+          ""
+        );
         await shareToken.methods
           .setApprovalForAll(augurFoundry.options.address, true)
           .send({ from: accounts[0] });
@@ -367,10 +447,26 @@ export default class App extends PureComponent {
           : yesShareBalance;
       // console.log(amount);
       console.log("before Wrapping");
+      this.openNotification("info", "Wrapping your shares", "");
       //wrapp all the tokens
-      await augurFoundry.methods
+      augurFoundry.methods
         .wrapMultipleTokens(tokenIds, accounts[0], amount.toString())
-        .send({ from: accounts[0] });
+        .send({ from: accounts[0] })
+        .on("error", (error) => {
+          if (error.message.includes("User denied transaction signature")) {
+            this.openNotification(
+              "error",
+              "User denied Signature",
+              "sign the transaction to be able to execute the transaction"
+            );
+          } else {
+            this.openNotification(
+              "error",
+              "There was an error in executing the transaction",
+              ""
+            );
+          }
+        });
     }
     await this.initData();
   }
@@ -387,22 +483,46 @@ export default class App extends PureComponent {
         .call();
       if (!isApprovedForAllToAugurFoundry) {
         console.log("approving shareTokens");
+        this.openNotification(
+          "info",
+          "Approving share tokens before redeeming DAI",
+          "This is one time transaction"
+        );
         await shareToken.methods
           .setApprovalForAll(augurFoundry.options.address, true)
           .send({ from: accounts[0] });
+        // console.log(receipt);
+        // if (receipt.code === 4001) {
+        //   alert("User denied signature");
+        // }
       }
       //end a market to do this
       if (isMarketFinalized) {
         console.log("claiming trading proceeds");
         //last arg is for fingerprint that has something to do with affiliate fees(NOTE: what exactly?)
-
-        await shareToken.methods
+        this.openNotification("info", "Redeeming DAI on winning shares", " ");
+        shareToken.methods
           .claimTradingProceeds(
             marketAddress,
             accounts[0],
             web3.utils.fromAscii("")
           )
-          .send({ from: accounts[0] });
+          .send({ from: accounts[0] })
+          .on("error", (error) => {
+            if (error.message.includes("User denied transaction signature")) {
+              this.openNotification(
+                "error",
+                "User denied Signature",
+                "sign the transaction to be able to execute the transaction"
+              );
+            } else {
+              this.openNotification(
+                "error",
+                "There was an error in executing the transaction",
+                ""
+              );
+            }
+          });
       } else {
         //here check the minimum of token balances
         //this should be a function
@@ -429,6 +549,11 @@ export default class App extends PureComponent {
             ? noShareBalance
             : yesShareBalance;
         // console.log(amount);
+        this.openNotification(
+          "info",
+          "redeeming DAI by selling your shares",
+          ""
+        );
         await shareToken.methods
           .sellCompleteSets(
             marketAddress,
@@ -437,7 +562,22 @@ export default class App extends PureComponent {
             amount.toString(),
             web3.utils.fromAscii("")
           )
-          .send({ from: accounts[0] });
+          .send({ from: accounts[0] })
+          .on("error", (error) => {
+            if (error.message.includes("User denied transaction signature")) {
+              this.openNotification(
+                "error",
+                "User denied Signature",
+                "sign the transaction to be able to execute the transaction"
+              );
+            } else {
+              this.openNotification(
+                "error",
+                "There was an error in executing the transaction",
+                ""
+              );
+            }
+          });
       }
     }
     await this.initData();
@@ -474,9 +614,25 @@ export default class App extends PureComponent {
       );
       // let amount =
       //   yesTokenBalance > noTokenBalance ? noTokenBalance : yesTokenBalance;
-      await augurFoundry.methods
+      this.openNotification("info", "unwrapping your shares", "");
+      augurFoundry.methods
         .unWrapMultipleTokens(tokenIds, constants.MAX_UINT256.toString())
-        .send({ from: accounts[0] });
+        .send({ from: accounts[0] })
+        .on("error", (error) => {
+          if (error.message.includes("User denied transaction signature")) {
+            this.openNotification(
+              "error",
+              "User denied Signature",
+              "sign the transaction to be able to execute the transaction"
+            );
+          } else {
+            this.openNotification(
+              "error",
+              "There was an error in executing the transaction",
+              ""
+            );
+          }
+        });
     }
     await this.initData();
   }
@@ -575,12 +731,23 @@ export default class App extends PureComponent {
     }
   }
 
+  openNotification = (type, title, description) => {
+    // const { notification } = antd;
+    notification[type]({
+      message: title,
+      duration: 15,
+      description: description,
+    });
+  };
   render() {
     return (
       <Container className="p-3 mainContainer">
         <Jumbotron>
           <h3 className="header">
-            <span style={{ color: "#FFA300" }}>AU</span>GUR <br></br> FOUNDRY
+            <span style={{ color: "#FFA300" }}>AU</span>
+            <span style={{ color: "#FFFFFF" }}>
+              GUR <br></br> FOUNDRY
+            </span>
           </h3>
           <Row>
             <Col xs={7}>
@@ -633,7 +800,13 @@ export default class App extends PureComponent {
                 <th></th>
               </tr>
             </thead>
-            <tbody>{this.state.listData}</tbody>
+            <tbody>
+              {this.state.listData == null ? (
+                <span>loading...</span>
+              ) : (
+                this.state.listData
+              )}
+            </tbody>
           </Table>
         </Jumbotron>
       </Container>
