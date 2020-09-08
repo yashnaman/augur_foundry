@@ -77,6 +77,13 @@ export default class App extends PureComponent {
   async initData() {
     console.log("initData");
     const { web3 } = this.state.web3Provider;
+
+    let chainId = await web3.eth.net.getId();
+    console.log(chainId);
+    if (chainId != 42) {
+      alert("connect to kovan testnet");
+      return;
+    }
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
 
     const cash = new web3.eth.Contract(
@@ -596,7 +603,7 @@ export default class App extends PureComponent {
                         <Form.Control
                           type="text"
                           name="amount"
-                          placeholder="ENTER AMOUNT OF DAI"
+                          placeholder="ENTER AMOUNT OF SHARES"
                         />
                       </Form.Group>
                     </Col>
