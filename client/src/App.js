@@ -154,6 +154,7 @@ export default class App extends PureComponent {
     // let yesTokenAddresses = [];
     // let noTokenAddress = [];
     // console.log(markets);
+    this.openNotification("info", "Updating Markets...", "");
     for (let x = 0; x < markets.length; x++) {
       let {
         yesTokenBalance,
@@ -331,17 +332,17 @@ export default class App extends PureComponent {
         console.log("allowance");
         this.openNotification(
           "info",
-          "Aprooving you DAI to before minting new shares",
+          "Approve your DAI to before minting new shares",
           "This is one time transaction"
         );
-        await cash.methods
+        cash.methods
           .approve(augur.options.address, constants.MAX_UINT256.toString())
           .send({ from: accounts[0] })
           .on("error", (error) => {
             if (error.message.includes("User denied transaction signature")) {
               this.openNotification(
                 "error",
-                "User denied Signature",
+                "User denied signature",
                 "sign the transaction to be able to execute the transaction"
               );
             } else {
@@ -354,16 +355,26 @@ export default class App extends PureComponent {
           })
           .on("receipt", function (receipt) {
             console.log("Before buy complete sets");
+            this.openNotification(
+              "info",
+              "Approval Successfull",
+              "Now we can mint shares for you"
+            );
+            this.openNotification("info", "Minting shares", "");
             shareToken.methods
               .buyCompleteSets(marketAddress, accounts[0], weiAmount.toString())
               .send({ from: accounts[0] })
+              .on("receipt", (receipt) => {
+                this.openNotification("info", "Shares minted successfully", "");
+                this.initData();
+              })
               .on("error", (error) => {
                 if (
                   error.message.includes("User denied transaction signature")
                 ) {
                   this.openNotification(
                     "error",
-                    "User denied Signature",
+                    "User denied signature",
                     "sign the transaction to be able to execute the transaction"
                   );
                 } else {
@@ -376,17 +387,21 @@ export default class App extends PureComponent {
               });
           });
       } else {
-        this.openNotification("info", "minting shares", "");
+        this.openNotification("info", "Minting shares", "");
         // console.log(marketAddress);
         //buy the complete sets
         shareToken.methods
           .buyCompleteSets(marketAddress, accounts[0], weiAmount.toString())
           .send({ from: accounts[0] })
+          .on("receipt", (receipt) => {
+            this.openNotification("info", "Shares minted successfully", "");
+            this.initData();
+          })
           .on("error", (error) => {
             if (error.message.includes("User denied transaction signature")) {
               this.openNotification(
                 "error",
-                "User denied Signature",
+                "User denied signature",
                 "sign the transaction to be able to execute the transaction"
               );
             } else {
@@ -399,9 +414,9 @@ export default class App extends PureComponent {
           });
       }
     } else {
-      this.openNotification("error", "Select a Market and Enter amount", "");
+      this.openNotification("error", "Select a Market and Enter   amount", "");
     }
-    await this.initData();
+    // await this.initData();
   }
 
   async wrapShare(marketAddress) {
@@ -413,16 +428,7 @@ export default class App extends PureComponent {
       let isApprovedForAllToAugurFoundry = await shareToken.methods
         .isApprovedForAll(accounts[0], augurFoundry.options.address)
         .call();
-      if (!isApprovedForAllToAugurFoundry) {
-        this.openNotification(
-          "info",
-          "Approve your share tokens to be able to wrap shares",
-          ""
-        );
-        await shareToken.methods
-          .setApprovalForAll(augurFoundry.options.address, true)
-          .send({ from: accounts[0] });
-      }
+
       let tokenIds = [];
       tokenIds.push(
         await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
@@ -447,28 +453,92 @@ export default class App extends PureComponent {
           : yesShareBalance;
       // console.log(amount);
       console.log("before Wrapping");
-      this.openNotification("info", "Wrapping your shares", "");
-      //wrapp all the tokens
-      augurFoundry.methods
-        .wrapMultipleTokens(tokenIds, accounts[0], amount.toString())
-        .send({ from: accounts[0] })
-        .on("error", (error) => {
-          if (error.message.includes("User denied transaction signature")) {
+
+      if (!isApprovedForAllToAugurFoundry) {
+        this.openNotification(
+          "info",
+          "Approve your share tokens to be able to wrap shares",
+          ""
+        );
+        shareToken.methods
+          .setApprovalForAll(augurFoundry.options.address, true)
+          .send({ from: accounts[0] })
+          .on("receipt", (receipt) => {
             this.openNotification(
-              "error",
-              "User denied Signature",
-              "sign the transaction to be able to execute the transaction"
+              "info",
+              "Approval successful",
+              "Now we can wrap shares"
             );
-          } else {
-            this.openNotification(
-              "error",
-              "There was an error in executing the transaction",
-              ""
-            );
-          }
-        });
+            // this.initData();
+            this.openNotification("info", "Wrapping your shares", "");
+            augurFoundry.methods
+              .wrapMultipleTokens(tokenIds, accounts[0], amount.toString())
+              .send({ from: accounts[0] })
+              .on("receipt", (receipt) => {
+                this.openNotification("info", "Wrapping successful", "");
+                this.initData();
+              })
+              .on("error", (error) => {
+                if (
+                  error.message.includes("User denied transaction signature")
+                ) {
+                  this.openNotification(
+                    "error",
+                    "User denied signature",
+                    "sign the transaction to be able to execute the transaction"
+                  );
+                } else {
+                  this.openNotification(
+                    "error",
+                    "There was an error in executing the transaction",
+                    ""
+                  );
+                }
+              });
+          })
+          .on("error", (error) => {
+            if (error.message.includes("User denied transaction signature")) {
+              this.openNotification(
+                "error",
+                "User denied signature",
+                "sign the transaction to be able to execute the transaction"
+              );
+            } else {
+              this.openNotification(
+                "error",
+                "There was an error in executing the transaction",
+                ""
+              );
+            }
+          });
+      } else {
+        this.openNotification("info", "Wrapping your shares", "");
+        //wrapp all the tokens
+        augurFoundry.methods
+          .wrapMultipleTokens(tokenIds, accounts[0], amount.toString())
+          .send({ from: accounts[0] })
+          .on("receipt", (receipt) => {
+            this.openNotification("info", "Wrapping successful", "");
+            this.initData();
+          })
+          .on("error", (error) => {
+            if (error.message.includes("User denied transaction signature")) {
+              this.openNotification(
+                "error",
+                "User denied signature",
+                "sign the transaction to be able to execute the transaction"
+              );
+            } else {
+              this.openNotification(
+                "error",
+                "There was an error in executing the transaction",
+                ""
+              );
+            }
+          });
+      }
     }
-    await this.initData();
+    // await this.initData();
   }
   async redeemDAI(marketAddress) {
     //check if market has finalized if it has call the claim trading proceeds
@@ -478,24 +548,24 @@ export default class App extends PureComponent {
     if (marketAddress) {
       let isMarketFinalized = await this.isMarketFinalized(marketAddress);
 
-      let isApprovedForAllToAugurFoundry = await shareToken.methods
-        .isApprovedForAll(accounts[0], augurFoundry.options.address)
-        .call();
-      if (!isApprovedForAllToAugurFoundry) {
-        console.log("approving shareTokens");
-        this.openNotification(
-          "info",
-          "Approving share tokens before redeeming DAI",
-          "This is one time transaction"
-        );
-        await shareToken.methods
-          .setApprovalForAll(augurFoundry.options.address, true)
-          .send({ from: accounts[0] });
-        // console.log(receipt);
-        // if (receipt.code === 4001) {
-        //   alert("User denied signature");
-        // }
-      }
+      // let isApprovedForAllToAugurFoundry = await shareToken.methods
+      //   .isApprovedForAll(accounts[0], augurFoundry.options.address)
+      //   .call();
+      // if (!isApprovedForAllToAugurFoundry) {
+      //   console.log("approving shareTokens");
+      //   this.openNotification(
+      //     "info",
+      //     "Approving share tokens before redeeming DAI",
+      //     "This is one time transaction"
+      //   );
+      //   await shareToken.methods
+      //     .setApprovalForAll(augurFoundry.options.address, true)
+      //     .send({ from: accounts[0] });
+      // console.log(receipt);
+      // if (receipt.code === 4001) {
+      //   alert("User denied signature");
+      // }
+
       //end a market to do this
       if (isMarketFinalized) {
         console.log("claiming trading proceeds");
@@ -508,11 +578,15 @@ export default class App extends PureComponent {
             web3.utils.fromAscii("")
           )
           .send({ from: accounts[0] })
+          .on("receipt", (receipt) => {
+            this.openNotification("info", "DAI redeemed successfully", "");
+            this.initData();
+          })
           .on("error", (error) => {
             if (error.message.includes("User denied transaction signature")) {
               this.openNotification(
                 "error",
-                "User denied Signature",
+                "User denied signature",
                 "sign the transaction to be able to execute the transaction"
               );
             } else {
@@ -551,10 +625,10 @@ export default class App extends PureComponent {
         // console.log(amount);
         this.openNotification(
           "info",
-          "redeeming DAI by selling your shares",
+          "Redeeming DAI by selling your shares",
           ""
         );
-        await shareToken.methods
+        shareToken.methods
           .sellCompleteSets(
             marketAddress,
             accounts[0],
@@ -563,11 +637,15 @@ export default class App extends PureComponent {
             web3.utils.fromAscii("")
           )
           .send({ from: accounts[0] })
+          .on("receipt", (receipt) => {
+            this.openNotification("info", "DAI redeemed successfully", "");
+            this.initData();
+          })
           .on("error", (error) => {
             if (error.message.includes("User denied transaction signature")) {
               this.openNotification(
                 "error",
-                "User denied Signature",
+                "User denied signature",
                 "sign the transaction to be able to execute the transaction"
               );
             } else {
@@ -580,8 +658,7 @@ export default class App extends PureComponent {
           });
       }
     }
-    await this.initData();
-  }
+  } // await this.initData();
 
   async getBalanceOfERC20(tokenAddress, account) {
     // console.log("getBlanecERC20" + account);
@@ -600,10 +677,10 @@ export default class App extends PureComponent {
     const { accounts } = this.state.web3Provider;
     const { augurFoundry, shareToken, OUTCOMES } = this.state;
     if (marketAddress) {
-      const {
-        yesTokenBalance,
-        noTokenBalance,
-      } = await this.getYesNoBalancesMarketERC20(marketAddress);
+      // const {
+      //   yesTokenBalance,
+      //   noTokenBalance,
+      // } = await this.getYesNoBalancesMarketERC20(marketAddress);
       //this should be a function
       let tokenIds = [];
       tokenIds.push(
@@ -614,15 +691,19 @@ export default class App extends PureComponent {
       );
       // let amount =
       //   yesTokenBalance > noTokenBalance ? noTokenBalance : yesTokenBalance;
-      this.openNotification("info", "unwrapping your shares", "");
+      this.openNotification("info", "Unwrapping shares", "");
       augurFoundry.methods
         .unWrapMultipleTokens(tokenIds, constants.MAX_UINT256.toString())
         .send({ from: accounts[0] })
+        .on("receipt", (receipt) => {
+          this.openNotification("info", "Shares unwrapped successfully", "");
+          this.initData();
+        })
         .on("error", (error) => {
           if (error.message.includes("User denied transaction signature")) {
             this.openNotification(
               "error",
-              "User denied Signature",
+              "User denied signature",
               "sign the transaction to be able to execute the transaction"
             );
           } else {
@@ -634,7 +715,7 @@ export default class App extends PureComponent {
           }
         });
     }
-    await this.initData();
+    // await this.initData();
   }
 
   async getYesNoBalancesMarketERC20(marketAddress) {
