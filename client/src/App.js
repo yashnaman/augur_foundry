@@ -75,6 +75,7 @@ export default class App extends PureComponent {
   }
 
   async initData() {
+    console.log("initData");
     const { web3 } = this.state.web3Provider;
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
 
@@ -129,12 +130,22 @@ export default class App extends PureComponent {
 
   async invetoryInit() {
     const { web3 } = this.state.web3Provider;
+    const { OUTCOMES } = this.state;
     let listData = [];
+    // let yesTokenAddresses = [];
+    // let noTokenAddress = [];
     // console.log(markets);
     for (let x = 0; x < markets.length; x++) {
-      let YN_balance = await this.getYesNoBalancesMarketERC20(
-        markets[x].address
-      );
+      let {
+        yesTokenBalance,
+        noTokenBalance,
+      } = await this.getYesNoBalancesMarketERC20(markets[x].address);
+      let {
+        yesTokenAddress,
+        noTokenAddress,
+      } = await this.getYesNoTokenAddresses(markets[x].address);
+      // console.log(noTokenAddres);
+      // console.log(yesTokenAddress);
       let shareTokenBlances = await this.getYesNoBalancesMarketShareToken(
         markets[x].address
       );
@@ -142,9 +153,27 @@ export default class App extends PureComponent {
         <tr>
           <td>{markets[x].extraInfo.description}</td>
           <td>
-            Yes : {web3.utils.fromWei(YN_balance.yesTokenBalance).toString()}
+            Yes : {web3.utils.fromWei(yesTokenBalance).toString()}(
+            <span
+              style={{ color: "#FFA300" }}
+              onClick={async (event) =>
+                this.addTokenToMetamask(yesTokenAddress, x, OUTCOMES.YES)
+              }
+            >
+              Add
+            </span>
+            )
             <br />
-            No : {web3.utils.fromWei(YN_balance.noTokenBalance).toString()}
+            No : {web3.utils.fromWei(noTokenBalance).toString()}(
+            <span
+              style={{ color: "#FFA300" }}
+              onClick={async (event) =>
+                this.addTokenToMetamask(noTokenAddress, x, OUTCOMES.NO)
+              }
+            >
+              Add
+            </span>
+            )
           </td>
           <td>
             Yes :{" "}
@@ -189,7 +218,48 @@ export default class App extends PureComponent {
     //console.log(listData)
     this.setState({ listData: listData });
   }
-
+  async addTokenToMetamask(tokenAddress, index, outcome) {
+    let tokenSymbol;
+    if (outcome == 1) {
+      tokenSymbol = "NO" + index;
+    } else if (outcome == 2) {
+      tokenSymbol = "YES" + index;
+    } else {
+      throw new Error("Not a valid outcome");
+    }
+    const provider = window.web3.currentProvider;
+    provider.sendAsync(
+      {
+        method: "metamask_watchAsset",
+        params: {
+          type: "ERC20",
+          options: {
+            address: tokenAddress,
+            symbol: tokenSymbol,
+            decimals: 18,
+            // image: tokenImage,
+          },
+        },
+        id: Math.round(Math.random() * 100000),
+      },
+      (err, added) => {
+        console.log("provider returned", err, added);
+        if (err || "error" in added) {
+          // this.setState({
+          //   errorMessage: "There was a problem adding the token.",
+          //   message: "",
+          // });
+          console.log("error");
+          return;
+        }
+        // this.setState({
+        //   message: "Token added!",
+        //   errorMessage: "",
+        // });
+        console.log("suceesfull");
+      }
+    );
+  }
   getBalance(marketAddress) {
     // This is not working either
     // Make this work
@@ -226,9 +296,7 @@ export default class App extends PureComponent {
       if (weiAmount.mul(numTicks).cmp(new BN(balance)) == 1) {
         //weiAmount > balance
         //await Promise.reject(new Error("Not Enough balance to buy complete sets"));
-        alert(
-          "Not enough cash(DAI)"
-        );
+        alert("Not enough cash(DAI)");
         return;
       }
 
@@ -279,20 +347,22 @@ export default class App extends PureComponent {
       // console.log(markets[0].YesTokenAddress);
 
       //get the balance of both tokenIds and give the amoun on which is less
-      let yesShareBalance = await shareToken.methods
-        .balanceOf(accounts[0], tokenIds[1])
-        .call();
-      let noShareBalance = await shareToken.methods
-        .balanceOf(accounts[0], tokenIds[0])
-        .call();
+      let yesShareBalance = new BN(
+        await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
+      );
+      let noShareBalance = new BN(
+        await shareToken.methods.balanceOf(accounts[0], tokenIds[0]).call()
+      );
       // console.log(yesShareBalance);
       let amount =
-        yesShareBalance > noShareBalance ? noShareBalance : yesShareBalance;
+        yesShareBalance.cmp(noShareBalance) == 1
+          ? noShareBalance
+          : yesShareBalance;
       // console.log(amount);
       console.log("before Wrapping");
       //wrapp all the tokens
       await augurFoundry.methods
-        .wrapMultipleTokens(tokenIds, accounts[0], amount)
+        .wrapMultipleTokens(tokenIds, accounts[0], amount.toString())
         .send({ from: accounts[0] });
     }
     await this.initData();
@@ -340,15 +410,17 @@ export default class App extends PureComponent {
         );
 
         //get the balance of both tokenIds and give the amoun on which is less
-        let yesShareBalance = await shareToken.methods
-          .balanceOf(accounts[0], tokenIds[1])
-          .call();
-        let noShareBalance = await shareToken.methods
-          .balanceOf(accounts[0], tokenIds[0])
-          .call();
+        let yesShareBalance = new BN(
+          await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
+        );
+        let noShareBalance = new BN(
+          await shareToken.methods.balanceOf(accounts[0], tokenIds[0]).call()
+        );
         // console.log(yesShareBalance);
         let amount =
-          yesShareBalance > noShareBalance ? noShareBalance : yesShareBalance;
+          yesShareBalance.cmp(noShareBalance) == 1
+            ? noShareBalance
+            : yesShareBalance;
         // console.log(amount);
         await shareToken.methods
           .sellCompleteSets(
@@ -408,23 +480,14 @@ export default class App extends PureComponent {
     let yesTokenBalance = new BN(0);
     let noTokenBalance = new BN(0);
     if (accounts[0]) {
-      let tokenIds = [];
-
-      tokenIds.push(
-        await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
-      );
-
-      tokenIds.push(
-        await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
-      );
-      let yesTokenAddress = await augurFoundry.methods
-        .wrappers(tokenIds[1])
-        .call();
-      let noTokenAddress = await augurFoundry.methods
-        .wrappers(tokenIds[0])
-        .call();
+      let {
+        yesTokenAddress,
+        noTokenAddress,
+      } = await this.getYesNoTokenAddresses(marketAddress);
       // console.log("yesTOkenAddress" + yesTokenAddress);
       // console.log("accounts{0}" + accounts[0]);
+      // console.log(noTokenAddress);
+      // console.log(yesTokenAddress);
 
       yesTokenBalance = await this.getBalanceOfERC20(
         yesTokenAddress,
@@ -439,6 +502,25 @@ export default class App extends PureComponent {
       yesTokenBalance: yesTokenBalance,
       noTokenBalance: noTokenBalance,
     };
+  }
+  async getYesNoTokenAddresses(marketAddress) {
+    const { shareToken, augurFoundry, OUTCOMES } = this.state;
+    let tokenIds = [];
+
+    tokenIds.push(
+      await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
+    );
+
+    tokenIds.push(
+      await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
+    );
+    let yesTokenAddress = await augurFoundry.methods
+      .wrappers(tokenIds[1])
+      .call();
+    let noTokenAddress = await augurFoundry.methods
+      .wrappers(tokenIds[0])
+      .call();
+    return { yesTokenAddress: yesTokenAddress, noTokenAddress: noTokenAddress };
   }
   async getYesNoBalancesMarketShareToken(marketAddress) {
     const { accounts } = this.state.web3Provider;
@@ -460,7 +542,7 @@ export default class App extends PureComponent {
         await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
       );
       noTokenBalance = new BN(
-        await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
+        await shareToken.methods.balanceOf(accounts[0], tokenIds[0]).call()
       );
     }
     return {
