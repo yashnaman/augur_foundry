@@ -75,14 +75,12 @@ contract("Intergration test", function (accounts) {
   //There are only three accounts that geth exposes
   //give tem meaning ful name later
   [marketCreator, testAccount, otherAccount] = accounts;
-  var yesERC20Wrapper;
-  let noERC20Wrapper;
+  // console.log(accounts);
+
   //The code in beforeEach will be executed already
   beforeEach(async function () {
-    // let balance = await getBalanceOfERC20(cash, testAccount);
-    // await cash.methods.burn(balance).send({ from: testAccount });
     //set up the seen
-    // console.log(THOUSAND);
+
     let marketAddress = await createYesNoMarket(
       marketCreator,
       markets[0].extraInfo
@@ -165,7 +163,7 @@ contract("Intergration test", function (accounts) {
           await getBlanceOfShareToken(testAccount, tokenId)
         );
       }
-      console.log(balanceOfERC1155s);
+      // console.log(balanceOfERC1155s);
 
       cashBalanceTestAccount = await getBalanceOfERC20(cash, testAccount);
       // console.log(cashBalanceTestAccount);
@@ -179,7 +177,7 @@ contract("Intergration test", function (accounts) {
           await getBlanceOfShareToken(testAccount, tokenId)
         );
       }
-      console.log(balanceOfERC1155sAfter);
+      // console.log(balanceOfERC1155sAfter);
 
       cashBalanceTestAccountAfter = await getBalanceOfERC20(cash, testAccount);
       // console.log(cashBalanceTestAccountAfter);
@@ -194,7 +192,7 @@ contract("Intergration test", function (accounts) {
             .sub(with18Decimals(new BN(100)))
         );
       }
-      console.log(delta.toString());
+      // console.log(delta.toString());
       //expect them to be have cash
       //how much?
     });
@@ -215,32 +213,22 @@ contract("Intergration test", function (accounts) {
       //need to give approval to the augur foundry contract
       //await shareTokenApproveForAll(testAccount, this.augurFoundry.address);
 
-      await wrapMultipleTokens(tokenIds, testAccount, amount);
+      await wrapMultipleTokens(tokenIds, testAccount, [amount, amount]);
 
-      // await this.augurFoundry.wrapMultipleTokens(
-      //   tokenIds,
-      //   testAccount,
-      //   amount,
-      //   { from: testAccount }
-      // );
       for (i in tokenIds) {
         expect(
           await getBlanceOfShareToken(testAccount, tokenIds[i])
         ).to.be.bignumber.equal("0");
       }
-      console.log(
-        (await getBlanceOfShareToken(testAccount, tokenIds[0])).toString()
-      );
+      // console.log(
+      //   (await getBlanceOfShareToken(testAccount, tokenIds[0])).toString()
+      // );
 
       //now let's unwrap + sell
-      // await unWrapMultipleTokens(tokenIds, testAccount, amount);
-      // await this.augurFoundry.unWrapMultipleTokens(tokenIds, amount, {
-      //   from: testAccount,
-      // });
-      await unWrapMultipleTokens(tokenIds, testAccount, amount);
-      console.log(
-        (await getBlanceOfShareToken(testAccount, tokenIds[0])).toString()
-      );
+      await unWrapMultipleTokens(tokenIds, testAccount, [amount, amount]);
+      // console.log(
+      //   (await getBlanceOfShareToken(testAccount, tokenIds[0])).toString()
+      // );
       for (i in tokenIds) {
         expect(
           await getBlanceOfShareToken(testAccount, tokenIds[i])
@@ -280,7 +268,7 @@ contract("Intergration test", function (accounts) {
           await getBlanceOfShareToken(testAccount, tokenId)
         );
       }
-      console.log(balanceOfERC1155s);
+      // console.log(balanceOfERC1155s);
 
       cashBalanceTestAccount = await getBalanceOfERC20(cash, testAccount);
       //2 means yes outcome wins
@@ -295,7 +283,7 @@ contract("Intergration test", function (accounts) {
         //every thing just got sold for the cash
         expect(balance).to.be.bignumber.equal("0");
       }
-      console.log(balanceOfERC1155sAfter);
+      // console.log(balanceOfERC1155sAfter);
 
       cashBalanceTestAccountAfter = await getBalanceOfERC20(cash, testAccount);
       // console.log(cashBalanceTestAccountAfter);
@@ -311,13 +299,12 @@ contract("Intergration test", function (accounts) {
       //       .sub(with18Decimals(new BN(100)))
       //   );
       // }
-      console.log(delta.toString());
+      // console.log(delta.toString());
     });
     it("when tokens are not wrapped and market is finalized", async function () {
       //wrap them
       let tokenIds = await getYesNoTokenIds(market.options.address);
       //need to give approval to the augur foundry contract
-      await wrapMultipleTokens(tokenIds, testAccount, amount);
       await claimTradingProceeds(market.options.address, testAccount);
     });
   });

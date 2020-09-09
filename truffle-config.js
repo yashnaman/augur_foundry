@@ -51,17 +51,22 @@ module.exports = {
     // You should run a client (like ganache-cli, geth or parity) in a separate terminal
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
-    //
+    //use this itself for testing
     development: {
-      networkCheckTimeout: 1000000,
-      provider: () =>
-        new PrivateKeyProvider(privateKey, "http://localhost:8545"),
-      network_id: 12346,
-      from: account,
-      gas: 8000000,
-      skipDryRun: true,
-      confirmations: 0,
+      host: "127.0.0.1", // Localhost (default: none)
+      port: 8545, // Standard Ethereum port (default: none)
+      network_id: "*", // Any network (default: none)
     },
+    // geth: {
+    //   networkCheckTimeout: 1000000,
+    //   provider: () =>
+    //     new PrivateKeyProvider(privateKey, "http://localhost:8545"),
+    //   network_id: 12346,
+    //   from: account,
+    //   gas: 8000000,
+    //   skipDryRun: true,
+    //   confirmations: 0,
+    // },
     kovan: {
       networkCheckTimeout: 100000,
       provider: () => new PrivateKeyProvider(privateKey, kovanInfuraProvider),

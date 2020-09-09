@@ -6,9 +6,6 @@ const web3 = new Web3(provider);
 const { BN, time, constants } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 
-const ERC20Wrapper = artifacts.require("ERC20Wrapper");
-const AugurFoundry = artifacts.require("AugurFoundry");
-
 //the goal here is to test all the function that will be available to the front end
 const contracts = require("../contracts.json").contracts;
 const addresses = require("../environment.json").addresses;
@@ -27,10 +24,10 @@ const augur = new web3.eth.Contract(
   contracts["Augur.sol"].Augur.abi,
   addresses.Augur
 );
-// const timeControlled = new web3.eth.Contract(
-//   contracts["TimeControlled.sol"].TimeControlled.abi,
-//   addresses.TimeControlled
-// );
+const timeControlled = new web3.eth.Contract(
+  contracts["TimeControlled.sol"].TimeControlled.abi,
+  addresses.TimeControlled
+);
 
 const erc20 = new web3.eth.Contract(contracts["Cash.sol"].Cash.abi);
 const repToken = erc20;
@@ -128,7 +125,7 @@ const buyCompleteSets = async function (marketAddress, account, amount) {
       .send({ from: account });
   }
   console.log("Before buy complete sets");
-  console.log(marketAddress);
+  // console.log(marketAddress);
   //buy the complete sets
   await shareToken.methods
     .buyCompleteSets(marketAddress, account, amount.toString())
@@ -160,7 +157,7 @@ const sellCompleteSets = async function (
     )
     .send({ from: account });
 };
-const wrapMultipleTokens = async function (tokenIds, account, amount) {
+const wrapMultipleTokens = async function (tokenIds, account, amounts) {
   let isApprovedForAllToAugurFoundry = await shareToken.methods
     .isApprovedForAll(account, augurFoundry.options.address)
     .call();
@@ -171,13 +168,13 @@ const wrapMultipleTokens = async function (tokenIds, account, amount) {
   }
   console.log("before Wrapping");
   await augurFoundry.methods
-    .wrapMultipleTokens(tokenIds, account, amount)
+    .wrapMultipleTokens(tokenIds, account, amounts)
     .send({ from: account });
 };
 
-const unWrapMultipleTokens = async function (tokenIds, account, amount) {
+const unWrapMultipleTokens = async function (tokenIds, account, amounts) {
   await augurFoundry.methods
-    .unWrapMultipleTokens(tokenIds, amount)
+    .unWrapMultipleTokens(tokenIds, amounts)
     .send({ from: account });
 };
 const createYesNoWrappersForMarket = async function (marketAddress, account) {
@@ -197,7 +194,7 @@ const createYesNoWrappersForMarket = async function (marketAddress, account) {
   wrappers.push(await augurFoundry.methods.wrappers(tokenIds[0]).call());
   wrappers.push(await augurFoundry.methods.wrappers(tokenIds[1]).call());
 
-  console.log(await augurFoundry.methods.wrappers(tokenIds[1]).call());
+  // console.log(await augurFoundry.methods.wrappers(tokenIds[1]).call());
   return wrappers;
 };
 const endMarket = async function (
@@ -206,7 +203,7 @@ const endMarket = async function (
   winningOutcome
 ) {
   market.options.address = marketAddress;
-  console.log((await time.latest()).toString());
+  // console.log((await time.latest()).toString());
 
   let payouts = [0, 0, 0];
   payouts[winningOutcome] = 1000;
@@ -239,11 +236,13 @@ const endMarket = async function (
     .incrementTimestamp(3600 * 50)
     .send({ from: marketReporter });
   console.log(
-    "timestamo incresead" + (await disputeWindow.methods.isOver().call())
+    "timestamp incresead: " + (await disputeWindow.methods.isOver().call())
   );
 
   await market.methods.finalize().send({ from: marketReporter });
-  console.log(await market.methods.isFinalized().call());
+  console.log(
+    "is market finalized: " + (await market.methods.isFinalized().call())
+  );
 };
 
 const claimTradingProceeds = async function (marketAddress, account) {
@@ -261,55 +260,26 @@ const claimTradingProceeds = async function (marketAddress, account) {
   //Right now it assumes that they are
 
   //get the winning outcome
-  let noPayout = new BN(
-    await market.methods.getWinningPayoutNumerator(OUTCOMES.NO).call()
-  );
-  let balance = new BN(0);
+  // let noPayout = new BN(
+  //   await market.methods.getWinningPayoutNumerator(OUTCOMES.NO).call()
+  // );
 
-  if (noPayout.cmp(new BN(0)) == 0) {
-    //that means that yes outcome won
-    //check if its balance for the user is greater than zero
-    console.log("winning outcome is YES");
-    erc20Wrapper.options.address = await augurFoundry.methods
-      .wrappers(tokenIds[1])
-      .call();
-    balance = await getBalanceOfERC20(erc20Wrapper, account);
-  } else {
-    //that means that no outcome won
-    //check if its balance for the user is greater than zero
-    console.log("winning outcome is NO");
-    erc20Wrapper.options.address = await augurFoundry.methods
-      .wrappers(tokenIds[0])
-      .call();
-    balance = await getBalanceOfERC20(erc20Wrapper, account);
-  }
-
-  console.log("balance of yes or no" + balance.toString());
+  // console.log("balance of yes or no" + balance.toString());
   //now if the token balance is greator than zero than ask augurfoundry to unwrap+claim
-  if (balance.cmp(new BN(0)) != 0) {
-    console.log("claiming trading proceeds wrapped");
-    await augurFoundry.methods
-      .claimTradingProceeds(
-        market.options.address,
-        account,
-        web3.utils.fromAscii("")
-      )
-      .send({ from: account });
-  } else {
-    //last arg is for fingerprint that has something to do with affiliate fees(NOTE: what exactly?)
-    await shareTokenApproveForAll(account, augur.options.address);
-    console.log("claiming trading proceeds not wrapped");
-    await shareToken.methods
-      .claimTradingProceeds(marketAddress, account, web3.utils.fromAscii(""))
-      .send({ from: account });
-  }
+
+  //last arg is for fingerprint that has something to do with affiliate fees(NOTE: what exactly?)
+  await shareTokenApproveForAll(account, augur.options.address);
+  console.log("claiming trading proceeds not wrapped");
+  await shareToken.methods
+    .claimTradingProceeds(marketAddress, account, web3.utils.fromAscii(""))
+    .send({ from: account });
 
   console.log("token balances (should be zero)");
   for (i in tokenIds) {
     console.log((await getBlanceOfShareToken(account, tokenIds[0])).toString());
   }
-  console.log("cash balance");
-  console.log((await getBalanceOfERC20(cash, account)).toString());
+  // console.log("cash balance");
+  // console.log((await getBalanceOfERC20(cash, account)).toString());
 };
 
 const getCashFromFaucet = async function (account, amount) {

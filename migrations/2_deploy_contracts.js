@@ -7,7 +7,7 @@ const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 
 //the goal here is to test all the function that will be available to the front end
 const contracts = require("../contracts.json").contracts;
-const addresses = require("../environment-kovan.json").addresses;
+const addresses = require("../environment.json").addresses;
 const markets = require("../markets.json");
 
 const augurFoundry = new web3.eth.Contract(
@@ -134,18 +134,9 @@ const getYesNoTokenIds = async function (yesNoMarketAddress) {
 const ERC20Wrapper = artifacts.require("ERC20Wrapper");
 const AugurFoundry = artifacts.require("AugurFoundry");
 
-module.exports = async function (deployer, networks) {
-  // // if ("development" === network) {
-  // //   const { provider } = networks[network] || {};
-  // //   if (!provider) {
-  // //     throw new Error(`Unable to find provider for network: ${network}`);
-  // //   }
-  // // }
-
-  // // const web3 = new Web3(provider);
-
-  // let accounts = await web3.eth.getAccounts();
-  // console.log(accounts);
+module.exports = async function (deployer) {
+  let accounts = await web3.eth.getAccounts();
+  console.log(accounts);
 
   // // console.log(accounts);
   // // console.log(markets);
@@ -160,10 +151,10 @@ module.exports = async function (deployer, networks) {
       accounts[0],
       markets[i].extraInfo
     );
-    console.log("Market:" + markets[i].address);
+    // console.log("Market" + i + ":" + markets[i].address);
     // console.log(await getLatestMarket());
   }
-  console.log(markets);
+  // console.log(markets);
 
   // //deploy the augur foundry
 
@@ -172,7 +163,7 @@ module.exports = async function (deployer, networks) {
 
   await deployer.deploy(AugurFoundry, shareToken.options.address);
   let augurFoundry = await AugurFoundry.deployed();
-  console.log(augurFoundry.address);
+  // console.log(augurFoundry.address);
 
   //deploy erc20wrappers
   //get tokenIds for YES/NO outcome for every market
@@ -194,7 +185,7 @@ module.exports = async function (deployer, networks) {
     markets[i].NoTokenAddress = await augurFoundry.wrappers(tokenIds[0]);
     markets[i].YesTokenAddress = await augurFoundry.wrappers(tokenIds[1]);
 
-    console.log(await augurFoundry.wrappers(tokenIds[1]));
+    // console.log(await augurFoundry.wrappers(tokenIds[1]));
   }
 
   await fs.writeFile("markets.json", JSON.stringify(markets));

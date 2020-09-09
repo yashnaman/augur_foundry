@@ -12,7 +12,7 @@ const ERC20Wrapper = artifacts.require("ERC20Wrapper");
 const AugurFoundry = artifacts.require("AugurFoundry");
 
 contract("ERC20Wrapper", function (accounts) {
-  const [initialHolder, recipient, anotherAccount] = accounts;
+  const [initialHolder] = accounts;
   const tokenId = 1;
   const uri = "";
   const name = "test";

@@ -54,9 +54,6 @@ contract ERC20Wrapper is ERC20, ERC1155Receiver {
     function unWrapTokens(address _account, uint256 _amount) public {
         //burn it first
         //if the caller is augur foundry then no need for allowance to be checked
-        //if user want to unwrap all of its tokens then they will send MAX_INT in the arg
-        _amount = (_amount == uint256(-1)) ? balanceOf(_account) : _amount;
-
         if (msg.sender != _account && msg.sender != augurFoundry) {
             uint256 decreasedAllowance = allowance(_account, _msgSender()).sub(
                 _amount,

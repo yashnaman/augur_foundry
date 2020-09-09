@@ -82,7 +82,7 @@ contract AugurFoundry is ERC1155Receiver {
     function wrapMultipleTokens(
         uint256[] memory _tokenIds,
         address _account,
-        uint256 _amount
+        uint256[] memory _amounts
     ) public {
         ERC20Wrapper erc20Wrapper;
         for (uint256 i = 0; i < _tokenIds.length; i++) {
@@ -91,41 +91,23 @@ contract AugurFoundry is ERC1155Receiver {
                 msg.sender,
                 address(erc20Wrapper),
                 _tokenIds[i],
-                _amount,
+                _amounts[i],
                 ""
             );
-            erc20Wrapper.wrapTokens(_account, _amount);
+            erc20Wrapper.wrapTokens(_account, _amounts[i]);
         }
     }
 
     //This will take more gas than just unwrapping directly by calling the erc20Token
-    function unWrapMultipleTokens(uint256[] memory _tokenIds, uint256 _amount)
-        public
-    {
+    function unWrapMultipleTokens(
+        uint256[] memory _tokenIds,
+        uint256[] memory _amounts
+    ) public {
         ERC20Wrapper erc20Wrapper;
         for (uint256 i = 0; i < _tokenIds.length; i++) {
             erc20Wrapper = ERC20Wrapper(wrappers[_tokenIds[i]]);
-            erc20Wrapper.unWrapTokens(msg.sender, _amount);
+            erc20Wrapper.unWrapTokens(msg.sender, _amounts[i]);
         }
-    }
-
-    //This function unwraps all the erc20 tokens + claims trading proceeds
-    function claimTradingProceeds(
-        address _market,
-        address _account,
-        bytes32 _fingerprint
-    ) public {
-        //unwrap the tokens related to that market
-        //No tokenId
-        //unwrap all the tokens
-        //Note: replace this with the tokenId library
-        unWrapTokens(shareToken.getTokenId(_market, uint8(1)), uint256(-1));
-        //Yes tokenId
-        //unwrap all the tokens
-        unWrapTokens(shareToken.getTokenId(_market, uint8(2)), uint256(-1));
-
-        //Now claim it
-        shareToken.claimTradingProceeds(_market, _account, _fingerprint);
     }
 
     /**
@@ -177,8 +159,6 @@ contract AugurFoundry is ERC1155Receiver {
         uint256[] calldata values,
         bytes calldata data
     ) external override returns (bytes4) {
-        //This is not allowed
-        //transfer just one predefined id here
         return
             bytes4(
                 keccak256(

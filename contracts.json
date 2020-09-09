@@ -36090,9 +36090,9 @@
                 "type": "address"
               },
               {
-                "internalType": "uint256",
+                "internalType": "uint256[]",
                 "name": "_amount",
-                "type": "uint256"
+                "type": "uint256[]"
               }
             ],
             "name": "wrapMultipleTokens",
@@ -36108,35 +36108,12 @@
                 "type": "uint256[]"
               },
               {
-                "internalType": "uint256",
+                "internalType": "uint256[]",
                 "name": "_amount",
-                "type": "uint256"
+                "type": "uint256[]"
               }
             ],
             "name": "unWrapMultipleTokens",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-          },
-          {
-            "inputs": [
-              {
-                "internalType": "address",
-                "name": "_market",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "_account",
-                "type": "address"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "_fingerprint",
-                "type": "bytes32"
-              }
-            ],
-            "name": "claimTradingProceeds",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
