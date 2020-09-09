@@ -1,6 +1,6 @@
 body {
   color: #ffffff;
-  background-color: #0e0e0e;
+  background-color: #000;
 }
 
 /* .mainContainer{
@@ -9,15 +9,17 @@ body {
 .mainContainer .jumbotron {
   color: #ffffff;
   background-color: #000000;
+  padding-top: 38px;
 }
 .m-left {
   margin: 10px;
 }
 .dropdownMarket {
   border-radius: 0;
-  border: 1px solid #0e0e0e;
-  background-color: #161616 !important;
+  border: 1px solid #525252;
+  background-color: #171717 !important;
   margin-top: 35px;
+  padding: 2.7rem 2rem;
 }
 
 .mintShare {
@@ -25,8 +27,8 @@ body {
   border: #2cb3a7;
 }
 
-.mintShare:hover {
-  background: #2cb3a7;
+.mintShare:hover, .mintShare:focus, .mintShare:hover {
+  background: #1ca397;
 }
 
 .table-bordered {
@@ -46,3 +48,84 @@ body {
 .table-hover tbody tr:hover {
   color: #fff !important;
 }
+
+.form-control {
+  width: auto;
+}
+
+.custom-select {
+  width: 80%;
+}
+
+.col-7 {
+    flex: 0 0 54.333333%;
+}
+
+.col-8 {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+.table {
+  border: 1px solid #777;
+  color: #eee;
+}
+
+th {
+  border: 1px solid #777 !important;
+  color: #eee !important;
+}
+
+td {
+  border: 1px solid #555 !important;
+}
+
+.btn-danger {
+  padding: 5px 10px;
+  background-color: #B65739;
+  border-color: #b7b7b7;
+}
+
+.btn-danger:hover, .btn-danger:active, .btn-danger:focus {
+  background-color: #a64729;
+  border-color: #b7b7b7;
+}
+
+.btn-secondary {
+    margin-left: 0;
+    padding: 5px 20px;
+    color: #fff;
+    background-color: #545454;
+    border-color: #6c757d;
+  }
+
+.btn-secondary:hover, .btn-secondary:active, .btn-secondary:focus {
+    background-color: #444444;
+}
+
+.btn-success {
+  background: #00420f;
+  padding: 5px 20px;
+  border-color: #6c757d;
+  padding: 5px 30px !important;
+}
+
+.btn-success:hover, .btn-success:active, .btn-success:focus {
+  background:#002d0b;
+}
+
+.market-column {
+  width: 40%;
+}
+
+.holdings-column {
+  width: 20%;
+}
+
+.inventory-header {
+  color: #eee;
+  font-size: 1.44em !important;
+  margin-top: 20px;
+  font-weight:normal;
+}
+

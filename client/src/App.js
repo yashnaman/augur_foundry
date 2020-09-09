@@ -172,35 +172,35 @@ export default class App extends PureComponent {
       listData.push(
         <tr>
           <td>{markets[x].extraInfo.description}</td>
-          <td>
-            Yes : {web3.utils.fromWei(yesTokenBalance).toString()}(
-            <span
-              style={{ color: "#FFA300", cursor: "pointer" }}
-              onClick={async (event) =>
-                this.addTokenToMetamask(yesTokenAddress, x, OUTCOMES.YES)
-              }
-            >
-              Add
-            </span>
-            )
-            <br />
-            No : {web3.utils.fromWei(noTokenBalance).toString()}(
-            <span
-              style={{ color: "#FFA300", cursor: "pointer" }}
-              onClick={async (event) =>
-                this.addTokenToMetamask(noTokenAddress, x, OUTCOMES.NO)
-              }
-            >
-              Add
-            </span>
-            )
-          </td>
-          <td>
+           <td>
             Yes :{" "}
             {web3.utils.fromWei(shareTokenBlances.yesTokenBalance).toString()}
             <br />
             No :{" "}
             {web3.utils.fromWei(shareTokenBlances.noTokenBalance).toString()}
+          </td>
+          <td>
+            Yes : {web3.utils.fromWei(yesTokenBalance).toString()} (
+            <span
+              style={{ color: "#ffd790", cursor: "pointer" }}
+              onClick={async (event) =>
+                this.addTokenToMetamask(yesTokenAddress, x, OUTCOMES.YES)
+              }
+            >
+              Show in wallet
+            </span>
+            )
+            <br />
+            No : {web3.utils.fromWei(noTokenBalance).toString()} (
+            <span
+              style={{ color: "#ffd790", cursor: "pointer" }}
+              onClick={async (event) =>
+                this.addTokenToMetamask(noTokenAddress, x, OUTCOMES.NO)
+              }
+            >
+              Show in wallet
+            </span>
+            )
           </td>
           <td>
             {(await this.checkDAICondition(markets[x].address)) ? (
@@ -851,7 +851,7 @@ export default class App extends PureComponent {
                         <Form.Control
                           type="text"
                           name="amount"
-                          placeholder="ENTER AMOUNT OF SHARES"
+                          placeholder="Amount of DAI"
                         />
                       </Form.Group>
                     </Col>
@@ -871,14 +871,14 @@ export default class App extends PureComponent {
             </Col>
           </Row>
 
-          <h3 className="header">MY INVETORY</h3>
+          <h3 className="header inventory-header">MY INVENTORY</h3>
           <Table striped bordered hover>
             <thead>
               <tr>
-                <th>Market</th>
-                <th>Holdings ERC20</th>
-                <th>Holdings ERC1155</th>
-                <th></th>
+                <th class="market-column">Market</th>
+                <th class="holdings-column">Holdings ERC1155</th>
+                <th class="holdings-column">Holdings ERC20</th>
+                <th>Convert Shares</th>
               </tr>
             </thead>
             <tbody>
