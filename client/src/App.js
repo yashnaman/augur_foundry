@@ -12,7 +12,7 @@ import { BN, constants } from "@openzeppelin/test-helpers";
 
 import markets from "./markets-kovan.json";
 import contracts from "./configs/contracts.json";
-import environment from "./configs/environment.json";
+import environment from "./configs/environment-kovan.json";
 
 import { notification } from "antd";
 import "antd/dist/antd.css";
@@ -86,14 +86,14 @@ export default class App extends PureComponent {
 
     let chainId = await web3.eth.net.getId();
     console.log(chainId);
-    if (chainId != 42) {
-      this.openNotification(
-        "error",
-        "Wrong Network",
-        "Please connect to Kovan Testnet"
-      );
-      return;
-    }
+    // if (chainId != 42) {
+    //   this.openNotification(
+    //     "error",
+    //     "Wrong Network",
+    //     "Please connect to Kovan Testnet"
+    //   );
+    //   return;
+    // }
 
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
 
@@ -128,6 +128,9 @@ export default class App extends PureComponent {
       contracts.contracts["Augur.sol"].Augur.abi,
       environment.addresses.Augur
     );
+    const erc20Wrapper = new web3.eth.Contract(
+      contracts.contracts["ERC20Wrapper.sol"].ERC20Wrapper.abi
+    );
 
     this.setState(
       {
@@ -138,6 +141,7 @@ export default class App extends PureComponent {
         augur: augur,
         augurFoundry: augurFoundry,
         erc20: erc20,
+        erc20Wrapper: erc20Wrapper,
         OUTCOMES: OUTCOMES,
       },
       () => {
@@ -149,7 +153,7 @@ export default class App extends PureComponent {
 
   async invetoryInit() {
     const { web3 } = this.state.web3Provider;
-    const { OUTCOMES } = this.state;
+    const { OUTCOMES, erc20 } = this.state;
     let listData = [];
     // let yesTokenAddresses = [];
     // let noTokenAddress = [];
@@ -164,17 +168,29 @@ export default class App extends PureComponent {
         yesTokenAddress,
         noTokenAddress,
       } = await this.getYesNoTokenAddresses(markets[x].address);
+
+      let decimals = new BN(15);
+      yesTokenBalance = yesTokenBalance.mul(new BN(10).pow(new BN(2)));
+      noTokenBalance = noTokenBalance.mul(new BN(10).pow(new BN(2)));
       // console.log(noTokenAddres);
       // console.log(yesTokenAddress);
       let shareTokenBlances = await this.getYesNoBalancesMarketShareToken(
         markets[x].address
       );
+      console.log(
+        "yesTOkenBlance" +
+          x +
+          ": " +
+          web3.utils.fromWei(yesTokenBalance.toString())
+      );
       listData.push(
         <tr>
           <td>{markets[x].extraInfo.description}</td>
-           <td>
+          <td>
             Yes :{" "}
-            {web3.utils.fromWei(shareTokenBlances.yesTokenBalance).toString()}
+            {web3.utils
+              .fromWei(shareTokenBlances.yesTokenBalance.toString())
+              .toString()}
             <br />
             No :{" "}
             {web3.utils.fromWei(shareTokenBlances.noTokenBalance).toString()}
@@ -221,6 +237,26 @@ export default class App extends PureComponent {
                 >
                   REDEEM DAI
                 </Button>
+              </span>
+            ) : (await this.isMarketFinalized(markets[x].address)) ? (
+              <span>
+                {/* <Button
+                  variant="danger"
+                  type="submit"
+                  onClick={(e) => this.wrapShare(markets[x].address)}
+                >
+                  WRAP SHARES
+                </Button> */}
+                <Button
+                  variant="secondary"
+                  className="m-left"
+                  type="submit"
+                  onClick={(e) =>
+                    this.claimWinningsWhenWrapped(markets[x].address)
+                  }
+                >
+                  REDEEM DAI
+                </Button>{" "}
               </span>
             ) : (
               <Button
@@ -284,16 +320,6 @@ export default class App extends PureComponent {
       }
     );
   }
-  getBalance(marketAddress) {
-    // This is not working either
-    // Make this work
-    // let {
-    //   yesTokenBalance,
-    //   noTokenBalance,
-    // } = await this.getYesNoBalancesMarketERC20();
-    // return yesTokenBalance;
-    return 100;
-  }
 
   async mintDaiForm(e) {
     e.preventDefault();
@@ -303,6 +329,7 @@ export default class App extends PureComponent {
 
     // const marketIds = e.target.elements.marketIds.value;
     const marketAddress = e.target.elements.marketIds.value;
+    //Here the amount is the amoun of DAI users wants to spend to buy shares
     let amount = e.target.elements.amount.value;
 
     // const daiBalance = await daiInstance.methods.balanceOf(accounts[0]).call();
@@ -314,21 +341,25 @@ export default class App extends PureComponent {
       market.options.address = marketAddress;
       let balance = new BN(await cash.methods.balanceOf(accounts[0]).call());
       let numTicks = new BN(await market.methods.getNumTicks().call());
+      console.log("numTicks: " + numTicks);
 
-      //we need the account to have more than amount.mul(numTicks) balance
-      //we can hardcode numTicks to 1000 for YES/NO markets
-      if (weiAmount.mul(numTicks).cmp(new BN(balance)) == 1) {
+      let amountOfShareToBuy = weiAmount.div(numTicks);
+      console.log(web3.utils.fromWei(amountOfShareToBuy));
+
+      //user is inouting how much DAI they want to spend
+      //They should have more than they want to spend
+      if (weiAmount.cmp(balance) == 1) {
         //weiAmount > balance
         //await Promise.reject(new Error("Not Enough balance to buy complete sets"));
         this.openNotification("error", "Not Enough DAI(cash) Balance", "");
         return;
       }
 
-      let allowance = await cash.methods
-        .allowance(accounts[0], augur.options.address)
-        .call();
+      let allowance = new BN(
+        await cash.methods.allowance(accounts[0], augur.options.address).call()
+      );
 
-      if (weiAmount.mul(numTicks).cmp(new BN(allowance)) == 1) {
+      if (weiAmount.cmp(allowance) == 1) {
         console.log("allowance");
         this.openNotification(
           "info",
@@ -362,7 +393,11 @@ export default class App extends PureComponent {
             );
             this.openNotification("info", "Minting shares", "");
             shareToken.methods
-              .buyCompleteSets(marketAddress, accounts[0], weiAmount.toString())
+              .buyCompleteSets(
+                marketAddress,
+                accounts[0],
+                amountOfShareToBuy.toString()
+              )
               .send({ from: accounts[0] })
               .on("receipt", (receipt) => {
                 this.openNotification("info", "Shares minted successfully", "");
@@ -391,7 +426,11 @@ export default class App extends PureComponent {
         // console.log(marketAddress);
         //buy the complete sets
         shareToken.methods
-          .buyCompleteSets(marketAddress, accounts[0], weiAmount.toString())
+          .buyCompleteSets(
+            marketAddress,
+            accounts[0],
+            amountOfShareToBuy.toString()
+          )
           .send({ from: accounts[0] })
           .on("receipt", (receipt) => {
             this.openNotification("info", "Shares minted successfully", "");
@@ -416,6 +455,7 @@ export default class App extends PureComponent {
     } else {
       this.openNotification("error", "Select a Market and Enter   amount", "");
     }
+
     // await this.initData();
   }
 
@@ -447,10 +487,8 @@ export default class App extends PureComponent {
         await shareToken.methods.balanceOf(accounts[0], tokenIds[0]).call()
       );
       // console.log(yesShareBalance);
-      let amount =
-        yesShareBalance.cmp(noShareBalance) == 1
-          ? noShareBalance
-          : yesShareBalance;
+      //wrap whatever the balance is
+
       // console.log(amount);
       console.log("before Wrapping");
 
@@ -472,7 +510,10 @@ export default class App extends PureComponent {
             // this.initData();
             this.openNotification("info", "Wrapping your shares", "");
             augurFoundry.methods
-              .wrapMultipleTokens(tokenIds, accounts[0], amount.toString())
+              .wrapMultipleTokens(tokenIds, accounts[0], [
+                noShareBalance.toString(),
+                yesShareBalance.toString(),
+              ])
               .send({ from: accounts[0] })
               .on("receipt", (receipt) => {
                 this.openNotification("info", "Wrapping successful", "");
@@ -515,7 +556,10 @@ export default class App extends PureComponent {
         this.openNotification("info", "Wrapping your shares", "");
         //wrapp all the tokens
         augurFoundry.methods
-          .wrapMultipleTokens(tokenIds, accounts[0], amount.toString())
+          .wrapMultipleTokens(tokenIds, accounts[0], [
+            noShareBalance.toString(),
+            yesShareBalance.toString(),
+          ])
           .send({ from: accounts[0] })
           .on("receipt", (receipt) => {
             this.openNotification("info", "Wrapping successful", "");
@@ -548,29 +592,14 @@ export default class App extends PureComponent {
     if (marketAddress) {
       let isMarketFinalized = await this.isMarketFinalized(marketAddress);
 
-      // let isApprovedForAllToAugurFoundry = await shareToken.methods
-      //   .isApprovedForAll(accounts[0], augurFoundry.options.address)
-      //   .call();
-      // if (!isApprovedForAllToAugurFoundry) {
-      //   console.log("approving shareTokens");
-      //   this.openNotification(
-      //     "info",
-      //     "Approving share tokens before redeeming DAI",
-      //     "This is one time transaction"
-      //   );
-      //   await shareToken.methods
-      //     .setApprovalForAll(augurFoundry.options.address, true)
-      //     .send({ from: accounts[0] });
-      // console.log(receipt);
-      // if (receipt.code === 4001) {
-      //   alert("User denied signature");
-      // }
-
       //end a market to do this
       if (isMarketFinalized) {
         console.log("claiming trading proceeds");
         //last arg is for fingerprint that has something to do with affiliate fees(NOTE: what exactly?)
         this.openNotification("info", "Redeeming DAI on winning shares", " ");
+        //Add a check that user has the complete shares
+        //i.e. balanceofShareTOken for YES/NO/INVALID should be greater then zero
+
         shareToken.methods
           .claimTradingProceeds(
             marketAddress,
@@ -617,6 +646,7 @@ export default class App extends PureComponent {
         let noShareBalance = new BN(
           await shareToken.methods.balanceOf(accounts[0], tokenIds[0]).call()
         );
+        //NOTE: add the invalid share amount in comaparision too.
         // console.log(yesShareBalance);
         let amount =
           yesShareBalance.cmp(noShareBalance) == 1
@@ -659,7 +689,90 @@ export default class App extends PureComponent {
       }
     }
   } // await this.initData();
+  async claimWinningsWhenWrapped(marketAddress) {
+    const { web3, accounts } = this.state.web3Provider;
+    const {
+      shareToken,
+      augurFoundry,
+      market,
+      OUTCOMES,
+      erc20Wrapper,
+    } = this.state;
+    //check if the market has finalized
+    market.options.address = marketAddress;
+    if (await market.methods.isFinalized().call()) {
+      //get the winning outcome
+      let numTicks = new BN(await market.methods.getNumTicks().call());
+      let tokenIds = [];
+      tokenIds.push(
+        await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
+      );
+      tokenIds.push(
+        await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
+      );
+      let i;
+      for (i in tokenIds) {
+        // console.log("before calling winnign payout");
+        let outcome;
+        if (i == 0) {
+          outcome = OUTCOMES.NO;
+        } else {
+          outcome = OUTCOMES.YES;
+        }
+        let winningPayoutNumerator = new BN(
+          await market.methods.getWinningPayoutNumerator(outcome).call()
+        );
+        // console.log("winningPayoutNumerator: " + winningPayoutNumerator);
+        // console.log("numTicks: " + numTicks);
+        if (winningPayoutNumerator.cmp(numTicks) == 0) {
+          // console.log("before calling q");
 
+          erc20Wrapper.options.address = await augurFoundry.methods
+            .wrappers(tokenIds[i])
+            .call();
+          //no claim for the user
+          // if(winningOutcome balance is zero then redeem DAI by selling ERC1155s)
+          let balanceOfWinningOutcomeWrapped = await this.getBalanceOfERC20(
+            erc20Wrapper.options.address,
+            accounts[0]
+          );
+          console.log(balanceOfWinningOutcomeWrapped.toString());
+          if (balanceOfWinningOutcomeWrapped.cmp(new BN(0)) == 0) {
+            console.log("reddeem DAI called");
+            this.redeemDAI(marketAddress);
+            //try to sell by calling the shareToken method directly
+          } else {
+            console.log("reddeem not DAI called");
+            erc20Wrapper.methods
+              .claim(accounts[0])
+              .send({ from: accounts[0] })
+              .on("receipt", (receipt) => {
+                this.openNotification("info", "DAI redeemed successfully", "");
+                this.initData();
+              })
+              .on("error", (error) => {
+                if (
+                  error.message.includes("User denied transaction signature")
+                ) {
+                  this.openNotification(
+                    "error",
+                    "User denied signature",
+                    "sign the transaction to be able to execute the transaction"
+                  );
+                } else {
+                  this.openNotification(
+                    "error",
+                    "There was an error in executing the transaction",
+                    ""
+                  );
+                }
+              });
+          }
+        }
+      }
+    }
+    // await this.initData();
+  }
   async getBalanceOfERC20(tokenAddress, account) {
     // console.log("getBlanecERC20" + account);
     const { erc20 } = this.state;
@@ -670,6 +783,7 @@ export default class App extends PureComponent {
   async isMarketFinalized(marketAddress) {
     const { market } = this.state;
     market.options.address = marketAddress;
+    console.log(await market.methods.isFinalized().call());
     return await market.methods.isFinalized().call();
   }
 
@@ -677,10 +791,10 @@ export default class App extends PureComponent {
     const { accounts } = this.state.web3Provider;
     const { augurFoundry, shareToken, OUTCOMES } = this.state;
     if (marketAddress) {
-      // const {
-      //   yesTokenBalance,
-      //   noTokenBalance,
-      // } = await this.getYesNoBalancesMarketERC20(marketAddress);
+      const {
+        yesTokenBalance,
+        noTokenBalance,
+      } = await this.getYesNoBalancesMarketERC20(marketAddress);
       //this should be a function
       let tokenIds = [];
       tokenIds.push(
@@ -689,11 +803,15 @@ export default class App extends PureComponent {
       tokenIds.push(
         await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
       );
+
       // let amount =
       //   yesTokenBalance > noTokenBalance ? noTokenBalance : yesTokenBalance;
       this.openNotification("info", "Unwrapping shares", "");
       augurFoundry.methods
-        .unWrapMultipleTokens(tokenIds, constants.MAX_UINT256.toString())
+        .unWrapMultipleTokens(tokenIds, [
+          noTokenBalance.toString(),
+          yesTokenBalance.toString(),
+        ])
         .send({ from: accounts[0] })
         .on("receipt", (receipt) => {
           this.openNotification("info", "Shares unwrapped successfully", "");
@@ -767,10 +885,14 @@ export default class App extends PureComponent {
     return { yesTokenAddress: yesTokenAddress, noTokenAddress: noTokenAddress };
   }
   async getYesNoBalancesMarketShareToken(marketAddress) {
-    const { accounts } = this.state.web3Provider;
-    const { shareToken, augurFoundry, erc20, OUTCOMES } = this.state;
-    let yesTokenBalance = new BN(0);
-    let noTokenBalance = new BN(0);
+    const { accounts, web3 } = this.state.web3Provider;
+    const { shareToken, augurFoundry, market, erc20, OUTCOMES } = this.state;
+
+    market.options.address = marketAddress;
+    let numTicks = new BN(await market.methods.getNumTicks().call());
+
+    let yesTokenBalanceWithNumTicks = new BN(0);
+    let noTokenBalanceWithNumTicks = new BN(0);
     if (accounts[0]) {
       let tokenIds = [];
 
@@ -782,16 +904,19 @@ export default class App extends PureComponent {
         await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
       );
 
-      yesTokenBalance = new BN(
+      let yesTokenBalance = new BN(
         await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
       );
-      noTokenBalance = new BN(
+      let noTokenBalance = new BN(
         await shareToken.methods.balanceOf(accounts[0], tokenIds[0]).call()
       );
+
+      yesTokenBalanceWithNumTicks = yesTokenBalance.mul(numTicks);
+      noTokenBalanceWithNumTicks = noTokenBalance.mul(numTicks);
     }
     return {
-      yesTokenBalance: yesTokenBalance,
-      noTokenBalance: noTokenBalance,
+      yesTokenBalance: yesTokenBalanceWithNumTicks,
+      noTokenBalance: noTokenBalanceWithNumTicks,
     };
   }
 
@@ -875,9 +1000,9 @@ export default class App extends PureComponent {
           <Table striped bordered hover>
             <thead>
               <tr>
-                <th class="market-column">Market</th>
-                <th class="holdings-column">Holdings ERC1155</th>
-                <th class="holdings-column">Holdings ERC20</th>
+                <th className="market-column">Market</th>
+                <th className="holdings-column">Holdings ERC1155</th>
+                <th className="holdings-column">Holdings ERC20</th>
                 <th>Convert Shares</th>
               </tr>
             </thead>

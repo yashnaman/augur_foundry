@@ -14,6 +14,7 @@ const AugurFoundry = artifacts.require("AugurFoundry");
 contract("Wrapper Behaves Like an ERC20", function (accounts) {
   const [initialHolder, recipient, anotherAccount] = accounts;
   const tokenId = 1;
+  const decimals = 16;
   const uri = "";
   const name = "test";
   const symbol = "TST";
@@ -25,10 +26,13 @@ contract("Wrapper Behaves Like an ERC20", function (accounts) {
 
     //deploy the augur foundry contract
     //We should deploy a mock augur foundry instead if we want to do the unit tests
-    this.augurFoundry = await AugurFoundry.new(this.mockShareToken.address);
+    this.augurFoundry = await AugurFoundry.new(
+      this.mockShareToken.address,
+      ZERO_ADDRESS
+    ); //no need to add cash address to test this functionalities
 
     //Create a new erc20 wrapper for a tokenId of the shareTOken
-    await this.augurFoundry.newERC20Wrapper(tokenId, name, symbol);
+    await this.augurFoundry.newERC20Wrapper(tokenId, name, symbol, decimals);
     let erc20WrapperAddress = await this.augurFoundry.wrappers(tokenId);
 
     this.token = await ERC20Wrapper.at(erc20WrapperAddress);
@@ -50,8 +54,10 @@ contract("Wrapper Behaves Like an ERC20", function (accounts) {
     expect(await this.token.symbol()).to.equal(symbol);
   });
 
-  it("has 18 decimals", async function () {
-    expect(await this.token.decimals()).to.be.bignumber.equal("18");
+  it("has  decimals", async function () {
+    expect(await this.token.decimals()).to.be.bignumber.equal(
+      decimals.toString()
+    );
   });
   describe("total supply", function () {
     it("returns the total amount of tokens", async function () {

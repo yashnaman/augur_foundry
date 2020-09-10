@@ -12,8 +12,9 @@ const ERC20Wrapper = artifacts.require("ERC20Wrapper");
 const AugurFoundry = artifacts.require("AugurFoundry");
 
 contract("ERC20Wrapper", function (accounts) {
-  const [initialHolder] = accounts;
+  const [initialHolder, mockCashAddress] = accounts;
   const tokenId = 1;
+  const decimals = 18;
   const uri = "";
   const name = "test";
   const symbol = "TST";
@@ -24,10 +25,13 @@ contract("ERC20Wrapper", function (accounts) {
 
     //deploy the augur foundry contract
     //We should deploy a mock augur foundry instead if we want to do the unit tests
-    this.augurFoundry = await AugurFoundry.new(this.mockShareToken.address);
+    this.augurFoundry = await AugurFoundry.new(
+      this.mockShareToken.address,
+      mockCashAddress
+    );
 
     //Create a new erc20 wrapper for a tokenId of the shareTOken
-    await this.augurFoundry.newERC20Wrapper(tokenId, name, symbol);
+    await this.augurFoundry.newERC20Wrapper(tokenId, name, symbol, decimals);
     let erc20WrapperAddress = await this.augurFoundry.wrappers(tokenId);
 
     this.erc20Wrapper = await ERC20Wrapper.at(erc20WrapperAddress);

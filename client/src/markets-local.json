@@ -1,43 +1,43 @@
 [
   {
-    "augurFoundryAddress": "0xa49106a242b30eB29C30386c9395aB5b9556cb78",
-    "address": "0x4dea3bedae79da692f2675038c4d9b8c246b4fb6",
+    "augurFoundryAddress": "0xA31d1c1245Bfb6c5B9fcD6eAfc2411A9D31c2BC9",
+    "address": "0xb0E3C9d71DC1a0b5d2755F414F47b95125b4f7D9",
     "extraInfo": {
       "categories": ["Politics", "US Politics", "President"],
       "description": "Will DJ win the 2020 U.S. Presidential election?",
       "longDescription": "The winning candidate will have at least 270 electoral votes to win the presidential election.\nThis market is intended to be about a Single Candidate, if this is not the case, this market should settle as 'Invalid'."
     },
-    "YesTokenAddress": "0x7A114547d3480bC3197bDd109489F13A23Afa132",
-    "NoTokenAddress": "0x7C482928cd1a272E57cAe3fd64dB34584d2837F0",
+    "YesTokenAddress": "0xD74C801558DA2bF11B2A96F162ECc4817b2EC496",
+    "NoTokenAddress": "0x74c87092a6f8640c4d558E0F423Aba3F139AcbD8",
     "yesTokenId": "35241945164985940831766909683914416240183070374501935269751242061395229933568",
     "noTokenId": "35241945164985940831766909683914416240183070374501625784741420716326505152512"
   },
   {
-    "address": "0xD3Ba2A2E641F61a5Bcb7a772C49BA6b78E1416e0",
+    "address": "0x23Abf9f2E030c0aF4198B415793BCF13eFc46C06",
     "extraInfo": {
       "categories": ["Sports", "Basketball", "NBA"],
       "description": " Will Anthony Davis win the 2019-20 Defensive Player of the Year award?",
       "longDescription": "In the event of an award given to more than 1 player. If the player mentioned in the market is one of the players who wins the award, the market should resolve as Yes.This market is intended to be about a Single Person, if this is not the case, this market should settle as 'Invalid'. If the award in the market question is not awarded for any reason by event expiration, this market should resolve as 'No'."
     },
-    "YesTokenAddress": "0x7527d62F3aE31176845468EA317e4970BB7FB3dc",
-    "NoTokenAddress": "0xfdEca57aF0880a2a789c8084A65ffB6C38107Fe6",
+    "YesTokenAddress": "0xEbb41D34C50F192f9b4340fCDC9d2C4F3910DDFA",
+    "NoTokenAddress": "0x89A44487032B6AF0385ac05934F38fa37907eF25",
     "yesTokenId": "95766935729166238065196768581699002861544481200992187110404344209341667082240",
     "noTokenId": "95766935729166238065196768581699002861544481200991877625394522864272942301184"
   },
   {
-    "address": "0x434680cE3943A76A276c7bF329F74F4f9B9Cc41d",
+    "address": "0xEb7083d96739D0162713CB481E9D98605a8032a1",
     "extraInfo": {
       "categories": ["common", "yesNo 1 secondary", "yesNo 1 tertiary"],
       "description": "Will the FDA approve a vaccine for Coronavirus (Covid-19) by October 31, 2020?",
       "longDescription": "yesNo longDescription 1"
     },
-    "YesTokenAddress": "0xF0786f36482435fCA38ce8b557f64D160160A1FC",
-    "NoTokenAddress": "0x5CAA31208F4bF197E4f54156398a85d919913523",
+    "YesTokenAddress": "0x57c882e06fBEcB4a2Dd4FE4a326Ec8CC5c7eF85A",
+    "NoTokenAddress": "0xA311Fad8241eD05C276f98949928ca71C175Bd5C",
     "yesTokenId": "30429529132925369400715871890850819209840489584523578876250179417247685017600",
     "noTokenId": "30429529132925369400715871890850819209840489584523269391240358072178960236544"
   },
   {
-    "address": "0x4c84e8631824ea85dfa89461d41802cd64d6f237",
+    "address": "0xbE19385AA40d1aa7C94E73500D893f169325Fb00",
     "extraInfo": {
       "categories": [
         "yesNo 2 primary",
@@ -47,8 +47,8 @@
       "description": "Will the price of ETH/USD open at or above 800 on September 30, 2020, according to TradingView.com?",
       "longDescription": "yesNo longDescription 2"
     },
-    "YesTokenAddress": "0xF605919bD3f2D469f4669E58F7b9a2C8AD63FB24",
-    "NoTokenAddress": "0xaA91e5e5AD180C3B4fB92e62a547e347Ec134a1a",
+    "YesTokenAddress": "0x14Da3aE5D6362A95106d1de1028e737935CcA779",
+    "NoTokenAddress": "0xEC876261eF80a3741688259FaF667828aD1cd840",
     "yesTokenId": "34610604181608849111491897534568394368616475032064379798973974411408675176448",
     "noTokenId": "34610604181608849111491897534568394368616475032064070313964153066339950395392"
   }

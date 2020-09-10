@@ -3,17 +3,16 @@ import "./ERC20Wrapper.sol";
 import "./IShareToken.sol";
 pragma experimental ABIEncoderV2;
 
-contract AugurFoundry is ERC1155Receiver {
+contract AugurFoundry {
     // address universe;
     // address augur;
-    IShareToken shareToken;
+    IShareToken public shareToken;
+    IERC20 public cash;
 
     mapping(uint256 => address) public wrappers;
 
-    //Make a buy complete shares function but that should mean that they do not have to wrap
-    //their tokens
-
-    constructor(IShareToken _shareToken) public {
+    constructor(IShareToken _shareToken, IERC20 _cash) public {
+        cash = _cash;
         shareToken = _shareToken;
     }
 
@@ -21,14 +20,18 @@ contract AugurFoundry is ERC1155Receiver {
     function newERC20Wrapper(
         uint256 _tokenId,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        uint8 _decimals
     ) public {
+        require(wrappers[_tokenId] == address(0), "Wrapper already created");
         ERC20Wrapper erc20Wrapper = new ERC20Wrapper(
             address(this),
-            _tokenId,
             shareToken,
+            cash,
+            _tokenId,
             _name,
-            _symbol
+            _symbol,
+            _decimals
         );
         wrappers[_tokenId] = address(erc20Wrapper);
     }
@@ -36,7 +39,8 @@ contract AugurFoundry is ERC1155Receiver {
     function newERC20Wrappers(
         uint256[] memory _tokenIds,
         string[] memory _names,
-        string[] memory _symbols
+        string[] memory _symbols,
+        uint8[] memory _decimals
     ) public {
         assert(
             _tokenIds.length == _names.length &&
@@ -44,14 +48,7 @@ contract AugurFoundry is ERC1155Receiver {
         );
         ERC20Wrapper erc20Wrapper;
         for (uint256 i = 0; i < _tokenIds.length; i++) {
-            erc20Wrapper = new ERC20Wrapper(
-                address(this),
-                _tokenIds[i],
-                shareToken,
-                _names[i],
-                _symbols[i]
-            );
-            wrappers[_tokenIds[i]] = address(erc20Wrapper);
+            newERC20Wrapper(_tokenIds[i], _names[i], _symbols[i], _decimals[i]);
         }
     }
 
@@ -108,62 +105,5 @@ contract AugurFoundry is ERC1155Receiver {
             erc20Wrapper = ERC20Wrapper(wrappers[_tokenIds[i]]);
             erc20Wrapper.unWrapTokens(msg.sender, _amounts[i]);
         }
-    }
-
-    /**
-        @dev Handles the receipt of a single ERC1155 token type. This function is
-        called at the end of a `safeTransferFrom` after the balance has been updated.
-        To accept the transfer, this must return
-        `bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))`
-        (i.e. 0xf23a6e61, or its own function selector).
-        @param operator The address which initiated the transfer (i.e. msg.sender)
-        @param from The address which previously owned the token
-        @param id The ID of the token being transferred
-        @param value The amount of tokens being transferred
-        @param data Additional data with no specified format
-        @return `bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))` if transfer is allowed
-    */
-    function onERC1155Received(
-        address operator,
-        address from,
-        uint256 id,
-        uint256 value,
-        bytes calldata data
-    ) external override returns (bytes4) {
-        return (
-            bytes4(
-                keccak256(
-                    "onERC1155Received(address,address,uint256,uint256,bytes)"
-                )
-            )
-        );
-    }
-
-    /**
-        @dev Handles the receipt of a multiple ERC1155 token types. This function
-        is called at the end of a `safeBatchTransferFrom` after the balances have
-        been updated. To accept the transfer(s), this must return
-        `bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))`
-        (i.e. 0xbc197c81, or its own function selector).
-        @param operator The address which initiated the batch transfer (i.e. msg.sender)
-        @param from The address which previously owned the token
-        @param ids An array containing ids of each token being transferred (order and length must match values array)
-        @param values An array containing amounts of each token being transferred (order and length must match ids array)
-        @param data Additional data with no specified format
-        @return `bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))` if transfer is allowed
-    */
-    function onERC1155BatchReceived(
-        address operator,
-        address from,
-        uint256[] calldata ids,
-        uint256[] calldata values,
-        bytes calldata data
-    ) external override returns (bytes4) {
-        return
-            bytes4(
-                keccak256(
-                    "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"
-                )
-            );
     }
 }

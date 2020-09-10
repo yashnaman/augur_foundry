@@ -13,4 +13,9 @@ interface IShareToken is IERC1155 {
         external
         pure
         returns (uint256 _tokenId);
+
+    function getMarket(uint256 _tokenId)
+        external
+        view
+        returns (address _marketAddress);
 }

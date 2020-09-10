@@ -17,6 +17,8 @@ const {
   createYesNoWrappersForMarket,
   endMarket,
   claimTradingProceeds,
+  getNumTicks,
+  claimWinningsWhenWrapped,
 } = require("../scripts/utils");
 
 const markets = require("../markets.json");
@@ -259,6 +261,9 @@ contract("Intergration test", function (accounts) {
       //to sell you to buy it first
       await getCashFromFaucet(testAccount, amount.mul(numTicks));
 
+      cashBalanceTestAccount = await getBalanceOfERC20(cash, testAccount);
+      console.log("cashBalanceBefore:" + cashBalanceTestAccount.toString());
+
       //add revert test when the balance is less than amount * numticks
       await buyCompleteSets(market.options.address, testAccount, amount);
       balanceOfERC1155s = [];
@@ -270,15 +275,15 @@ contract("Intergration test", function (accounts) {
       }
       // console.log(balanceOfERC1155s);
 
-      cashBalanceTestAccount = await getBalanceOfERC20(cash, testAccount);
       //2 means yes outcome wins
-      await endMarket(market.options.address, marketCreator, 2);
+      if (!(await market.methods.isFinalized().call()))
+        await endMarket(market.options.address, marketCreator, OUTCOMES.YES);
     });
     afterEach(async function () {
       balanceOfERC1155sAfter = [];
-      for (outcome in outComes) {
-        tokenId = await getTokenId(market.options.address, outcome);
-        let balance = await getBlanceOfShareToken(testAccount, tokenId);
+      let tokenIds = await getYesNoTokenIds(market.options.address);
+      for (i in tokenIds) {
+        let balance = await getBlanceOfShareToken(testAccount, tokenIds[i]);
         balanceOfERC1155sAfter.push(balance);
         //every thing just got sold for the cash
         expect(balance).to.be.bignumber.equal("0");
@@ -286,11 +291,10 @@ contract("Intergration test", function (accounts) {
       // console.log(balanceOfERC1155sAfter);
 
       cashBalanceTestAccountAfter = await getBalanceOfERC20(cash, testAccount);
-      // console.log(cashBalanceTestAccountAfter);
+      console.log("cashBalanceAfter:" + cashBalanceTestAccountAfter.toString());
       let delta = cashBalanceTestAccountAfter.sub(cashBalanceTestAccount);
       let numTicks = 1000;
       //fees = 10%
-      //Here there are some fees being deducted thus the constanst 100 is the fees(10%)
       //NOTE: ADD the exact test here
       // for (outcome in outComes) {
       //   expect(delta).to.be.bignumber.equal(
@@ -301,11 +305,18 @@ contract("Intergration test", function (accounts) {
       // }
       // console.log(delta.toString());
     });
-    it("when tokens are not wrapped and market is finalized", async function () {
-      //wrap them
+    //This is already tested
+    // it("when tokens are not wrapped and market is finalized", async function () {
+    //   let tokenIds = await getYesNoTokenIds(market.options.address);
+    //   //need to give approval to the augur foundry contract
+    //   await claimTradingProceeds(market.options.address, testAccount);
+    // });
+    it("when tokens are wrapped and market is finalized", async function () {
+      //we should not have a claim multiple tokens method because we know
+      //wrap the tokens
       let tokenIds = await getYesNoTokenIds(market.options.address);
-      //need to give approval to the augur foundry contract
-      await claimTradingProceeds(market.options.address, testAccount);
+      await wrapMultipleTokens(tokenIds, testAccount, [amount, amount]);
+      await claimWinningsWhenWrapped(market.options.address, testAccount);
     });
   });
 });

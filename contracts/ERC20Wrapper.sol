@@ -1,34 +1,35 @@
 pragma solidity ^0.6.2;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol";
+import "./IShareToken.sol";
 
 //the approch here is simple
 //Give erc1155 get erc20s
 //give erc20 get erc1155
 
 contract ERC20Wrapper is ERC20, ERC1155Receiver {
-    //create a new wrapper
-    //Decide what name to give
-    uint256 tokenId; //What tokenId is it a wrapper for
-    uint256 tokenIdBalance;
-    uint256 tokenBalance; //This should be zero at all times
+    uint256 public tokenId; //What tokenId is it a wrapper for
 
-    uint256 private unlocked = 1;
-    IERC1155 shareToken;
-    address augurFoundry;
+    IShareToken public shareToken;
+    IERC20 public cash;
+    address public augurFoundry;
 
-    //WhoEver called this constructor should be able to controle it
+    //WhoEver called this constructor should be able to controll it
     constructor(
         address _augurFoundry,
+        IShareToken _shareToken,
+        IERC20 _cash,
         uint256 _tokenId,
-        IERC1155 _shareToken,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        uint8 _decimals
     ) public ERC20(_name, _symbol) {
+        //Set the decimals equal to numTicks of market associated with the tokenId
+        _setupDecimals(_decimals);
         augurFoundry = _augurFoundry;
         tokenId = _tokenId;
         shareToken = _shareToken;
+        cash = _cash;
     }
 
     //This contract should be setApproveForAll by the caller
@@ -62,7 +63,6 @@ contract ERC20Wrapper is ERC20, ERC1155Receiver {
             _approve(_account, _msgSender(), decreasedAllowance);
         }
         _burn(_account, _amount);
-
         //now transfer them erc1155
         shareToken.safeTransferFrom(
             address(this),
@@ -73,9 +73,33 @@ contract ERC20Wrapper is ERC20, ERC1155Receiver {
         );
     }
 
-    //lets test it
+    //If the market has finalized users should call this function
+    function claim(address _account) public {
+        //if the proeceeds are not claimed
+        if (shareToken.balanceOf(address(this), tokenId) != 0) {
+            shareToken.claimTradingProceeds(
+                shareToken.getMarket(tokenId),
+                address(this),
+                ""
+            );
+        }
+        uint256 cashBalance = cash.balanceOf(address(this));
+        //now the contract will give the user thier share of winnig procceeds
+        if (cashBalance != 0) {
+            //This means that there were some winnigs and you are going to get your share of it
+            uint256 userShare = (cashBalance.mul(balanceOf(_account))).div(
+                totalSupply()
+            );
 
-    //lets not allow tokens to be burn directly or there may be a case of lost funds
+            cash.transfer(_account, userShare);
+            //Now burn the users wrapper tokens
+            _burn(_account, balanceOf(_account));
+        }
+        //else it means that this was not the winning outcome so user gets nothing
+    }
+
+    //We can add a function that claims winnings ones the market is finalized directly for the ERC20
+    //Holder without requiring it to be converted in to ERC1155s
 
     /**
         @dev Handles the receipt of a single ERC1155 token type. This function is
@@ -97,7 +121,7 @@ contract ERC20Wrapper is ERC20, ERC1155Receiver {
         uint256 value,
         bytes calldata data
     ) external override returns (bytes4) {
-        require(id == tokenId, "Not acceptable");
+        require(id == tokenId, "Not acceptable"); //Do not a tokenId other than what this ERC20 is a wrapper for
         return (
             bytes4(
                 keccak256(

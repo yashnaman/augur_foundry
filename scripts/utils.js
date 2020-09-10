@@ -15,6 +15,9 @@ const augurFoundry = new web3.eth.Contract(
   contracts["AugurFoundry.sol"].AugurFoundry.abi,
   markets[0].augurFoundryAddress
 );
+const erc20Wrapper = new web3.eth.Contract(
+  contracts["ERC20Wrapper.sol"].ERC20Wrapper.abi
+);
 
 const universe = new web3.eth.Contract(
   contracts["reporting/Universe.sol"].Universe.abi,
@@ -30,6 +33,7 @@ const timeControlled = new web3.eth.Contract(
 );
 
 const erc20 = new web3.eth.Contract(contracts["Cash.sol"].Cash.abi);
+
 const repToken = erc20;
 //This is the DAI token
 const cash = new web3.eth.Contract(
@@ -184,9 +188,17 @@ const createYesNoWrappersForMarket = async function (marketAddress, account) {
   ];
   let symbols = ["NO" + 1, "YES" + 1];
   let tokenIds = await getYesNoTokenIds(marketAddress);
+  let numTicks = await getNumTicks(marketAddress);
+  let zeros = new BN(0);
+  while (numTicks.toString() != "1") {
+    // console.log(numTicks.toString());
+    numTicks = numTicks.div(new BN(10));
+    zeros = zeros.add(new BN(1));
+  }
+  let decimals = new BN(18).sub(zeros);
   console.log("creating wrappers");
   await augurFoundry.methods
-    .newERC20Wrappers(tokenIds, names, symbols)
+    .newERC20Wrappers(tokenIds, names, symbols, [decimals, decimals])
     .send({ from: account });
 
   //add these tokenAddresses to the markets json file
@@ -196,6 +208,39 @@ const createYesNoWrappersForMarket = async function (marketAddress, account) {
 
   // console.log(await augurFoundry.methods.wrappers(tokenIds[1]).call());
   return wrappers;
+};
+const claimWinningsWhenWrapped = async function (marketAddress, account) {
+  //check if the market has finalized
+  market.options.address = marketAddress;
+  if (await market.methods.isFinalized().call()) {
+    //get the winning outcome
+    let numTicks = await getNumTicks(marketAddress);
+    let tokenIds = await getYesNoTokenIds(marketAddress);
+
+    for (i in tokenIds) {
+      // console.log("before calling winnign payout");
+      let outcome;
+      if (i == 0) {
+        outcome = OUTCOMES.NO;
+      } else {
+        outcome = OUTCOMES.YES;
+      }
+      let winningPayoutNumerator = new BN(
+        await market.methods.getWinningPayoutNumerator(outcome).call()
+      );
+      // console.log("winningPayoutNumerator: " + winningPayoutNumerator);
+      // console.log("numTicks: " + numTicks);
+      if (winningPayoutNumerator.cmp(numTicks) == 0) {
+        // console.log("before calling q");
+
+        erc20Wrapper.options.address = await augurFoundry.methods
+          .wrappers(tokenIds[i])
+          .call();
+        //no claim for the user
+        await erc20Wrapper.methods.claim(account).send({ from: account });
+      }
+    }
+  }
 };
 const endMarket = async function (
   marketAddress,
@@ -321,6 +366,10 @@ const getYesNoTokenIds = async function (yesNoMarketAddress) {
   tokenIds.push(await getTokenId(yesNoMarketAddress, OUTCOMES.YES));
   return tokenIds;
 };
+const getNumTicks = async function (marketAddress) {
+  market.options.address = marketAddress;
+  return new BN(await market.methods.getNumTicks().call());
+};
 
 module.exports = {
   buyCompleteSets: buyCompleteSets,
@@ -337,4 +386,6 @@ module.exports = {
   claimTradingProceeds: claimTradingProceeds,
   getCashFromFaucet: getCashFromFaucet,
   createYesNoWrappersForMarket: createYesNoWrappersForMarket,
+  getNumTicks: getNumTicks,
+  claimWinningsWhenWrapped: claimWinningsWhenWrapped,
 };

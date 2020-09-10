@@ -128,7 +128,10 @@ const getYesNoTokenIds = async function (yesNoMarketAddress) {
   tokenIds.push(await getTokenId(yesNoMarketAddress, OUTCOMES.YES));
   return tokenIds;
 };
-
+const getNumTicks = async function (marketAddress) {
+  market.options.address = marketAddress;
+  return new BN(await market.methods.getNumTicks().call());
+};
 //Deploy 4 markets
 //And Right the info in a file
 const ERC20Wrapper = artifacts.require("ERC20Wrapper");
@@ -161,7 +164,11 @@ module.exports = async function (deployer) {
   //Now lets deploy erc20s for the yes/no of these marekts
   //Only thing that the UI has to know is the address of the augur foundry which will be available in the markets.json
 
-  await deployer.deploy(AugurFoundry, shareToken.options.address);
+  await deployer.deploy(
+    AugurFoundry,
+    shareToken.options.address,
+    cash.options.address
+  );
   let augurFoundry = await AugurFoundry.deployed();
   // console.log(augurFoundry.address);
 
@@ -179,7 +186,20 @@ module.exports = async function (deployer) {
     ];
     let symbols = ["NO" + i, "YES" + i];
     let tokenIds = await getYesNoTokenIds(markets[i].address);
-    await augurFoundry.newERC20Wrappers(tokenIds, names, symbols);
+
+    let numTicks = await getNumTicks(markets[i].address);
+    let zeros = new BN(0);
+    while (numTicks.toString() != "1") {
+      numTicks = numTicks.div(new BN(10));
+      zeros = zeros.add(new BN(1));
+    }
+    let decimals = new BN(18).sub(zeros);
+
+    // console.log("decimals: " + decimals);
+    await augurFoundry.newERC20Wrappers(tokenIds, names, symbols, [
+      decimals,
+      decimals,
+    ]);
 
     //add these tokenAddresses to the markets json file
     markets[i].NoTokenAddress = await augurFoundry.wrappers(tokenIds[0]);
