@@ -1,43 +1,43 @@
 [
   {
-    "augurFoundryAddress": "0xFaf54B0c3b12A50f075e3426ac097CDD2ED04cE6",
-    "address": "0x24FC66642679f6E70bCF131962688A6e30C8f3b7",
+    "augurFoundryAddress": "0xa3680C463c54909eC0Dea124B86620db0c98012C",
+    "address": "0xaA66BD394b970E9ac1b69DcDCa36fcE59F9478c2",
     "extraInfo": {
       "categories": ["Politics", "US Politics", "President"],
       "description": "Will DJ win the 2020 U.S. Presidential election?",
       "longDescription": "The winning candidate will have at least 270 electoral votes to win the presidential election.\nThis market is intended to be about a Single Candidate, if this is not the case, this market should settle as 'Invalid'."
     },
-    "YesTokenAddress": "0x90005319f8D76Ff34228B211F0286316C6508b74",
-    "NoTokenAddress": "0x3aAb7d50eC0b2b8840bEd6d05BD32e8D7A064d36",
-    "yesTokenId": "16729214687495822538388039734156192323900939918263351941710665096339604373504",
-    "noTokenId": "16729214687495822538388039734156192323900939918263042456700843751270879592448"
+    "YesTokenAddress": "0x596f5B29dB0fdb41BFa3529bEcd2fbCB6aaE8Ec2",
+    "NoTokenAddress": "0xE0f98158713A6BE360bb943CE6323e76112Be959",
+    "yesTokenId": "77074708634499747809961685856540619139693210280235393857994717565592014946304",
+    "noTokenId": "77074708634499747809961685856540619139693210280235084372984896220523290165248"
   },
   {
-    "address": "0x8b26ae9C6055741C7122f40777Db97a429966448",
+    "address": "0x7E557E37587562b3e50C9B2FAC52d6cc506601a7",
     "extraInfo": {
       "categories": ["Sports", "Basketball", "NBA"],
       "description": " Will Anthony Davis win the 2019-20 Defensive Player of the Year award?",
       "longDescription": "In the event of an award given to more than 1 player. If the player mentioned in the market is one of the players who wins the award, the market should resolve as Yes.This market is intended to be about a Single Person, if this is not the case, this market should settle as 'Invalid'. If the award in the market question is not awarded for any reason by event expiration, this market should resolve as 'No'."
     },
-    "YesTokenAddress": "0xF1294B1b90fc62dd83C8787598884124e88e7207",
-    "NoTokenAddress": "0x159f43f5aD5Ace973C8b0562D5fF15f2B82D88E6",
-    "yesTokenId": "62939831261296761777385693165196500899379647802280849544831795247448785420288",
-    "noTokenId": "62939831261296761777385693165196500899379647802280540059821973902380060639232"
+    "YesTokenAddress": "0xc6704eCBf92Db85133CC6b3Ee38295d3244C7956",
+    "NoTokenAddress": "0xCa69a093E012e3323d9718Dbcdf1F239D95d1e14",
+    "yesTokenId": "57142472034150261191656326774311489758998133123891554546750113883351999840256",
+    "noTokenId": "57142472034150261191656326774311489758998133123891245061740292538283275059200"
   },
   {
-    "address": "0x13F257e89B0FD89C9624D33d664654840Da3337b",
+    "address": "0xb0DcD833daFE92E11Ac79e9b39b7072c3cC91913",
     "extraInfo": {
       "categories": ["common", "yesNo 1 secondary", "yesNo 1 tertiary"],
       "description": "Will the FDA approve a vaccine for Coronavirus (Covid-19) by October 31, 2020?",
       "longDescription": "yesNo longDescription 1"
     },
-    "YesTokenAddress": "0x99b8984c1cfF766CC16b08438eB1DE6C1FD1C24f",
-    "NoTokenAddress": "0x0b6F3354f64434c644432722785444DE3420D870",
-    "yesTokenId": "9022127835728151877093521795610960805566208768720056540540384190947498393600",
-    "noTokenId": "9022127835728151877093521795610960805566208768719747055530562845878773612544"
+    "YesTokenAddress": "0xffe9313b00F3a1052ECaC271702B978359509203",
+    "NoTokenAddress": "0xbC74B3F058298Cfb1FfD515F22d74640469D018b",
+    "yesTokenId": "79997259880137120841768446537296975505306308336424361818573708053107202588672",
+    "noTokenId": "79997259880137120841768446537296975505306308336424052333563886708038477807616"
   },
   {
-    "address": "0xd35346F5e26Ac4Af6AD6EA630A46BCDB0A7cDCb1",
+    "address": "0x1E147B6b8f5436CbF74FFd7a7373A42D8b5DBfCe",
     "extraInfo": {
       "categories": [
         "yesNo 2 primary",
@@ -47,9 +47,9 @@
       "description": "Will the price of ETH/USD open at or above 800 on September 30, 2020, according to TradingView.com?",
       "longDescription": "yesNo longDescription 2"
     },
-    "YesTokenAddress": "0x62cb86987d37a0F21e6BAE2fd10a475815211bDA",
-    "NoTokenAddress": "0x2d65Fd030dE8CBEdE4176484e3f9D2DE0A0Cb9e1",
-    "yesTokenId": "95585149108721522486330793487338966279964543469099229950056687210363449507840",
-    "noTokenId": "95585149108721522486330793487338966279964543469098920465046865865294724726784"
+    "YesTokenAddress": "0xC18E770D818422AA96815100a0650559F8b36f5E",
+    "NoTokenAddress": "0x0a281f996df570adf9994fc00Af7C5820008CDF0",
+    "yesTokenId": "13605574213402809321533252465456130916335690466871693261430803610741485076480",
+    "noTokenId": "13605574213402809321533252465456130916335690466871383776420982265672760295424"
   }
 ]

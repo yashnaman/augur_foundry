@@ -9,6 +9,7 @@ import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
+import NumberFormat from "react-number-format";
 
 import markets from "./markets-kovan.json";
 import contracts from "./configs/contracts.json";
@@ -132,7 +133,12 @@ export default class App extends PureComponent {
     const erc20Wrapper = new web3.eth.Contract(
       contracts.contracts["ERC20Wrapper.sol"].ERC20Wrapper.abi
     );
-
+    let totalOIEth = web3.utils.fromWei(
+      await universe.methods.getOpenInterestInAttoCash().call()
+    );
+    let n = totalOIEth.indexOf(".");
+    //This is a hack for precision when dealing with bignumber
+    let totalOI = totalOIEth.substring(0, n != -1 ? n + 3 : totalOIEth.length);
     this.setState(
       {
         cash: cash,
@@ -144,6 +150,7 @@ export default class App extends PureComponent {
         erc20: erc20,
         erc20Wrapper: erc20Wrapper,
         OUTCOMES: OUTCOMES,
+        totalOI: totalOI,
       },
       () => {
         this.invetoryInit();
@@ -977,12 +984,27 @@ export default class App extends PureComponent {
     return (
       <Container className="p-3 mainContainer">
         <Jumbotron>
+          <Jumbotron className="topcorner">
+            <h3>
+              <span style={{ color: "#FFFFFF" }}>
+                Total Money at Stake
+                <br />
+                <NumberFormat
+                  value={this.state.totalOI}
+                  displayType={"text"}
+                  thousandSeparator={true}
+                  prefix={"$"}
+                />
+              </span>
+            </h3>
+          </Jumbotron>
           <h3 className="header">
             <span style={{ color: "#FFA300" }}>AU</span>
             <span style={{ color: "#FFFFFF" }}>
               GUR <br></br> FOUNDRY
             </span>
           </h3>
+
           <Row>
             <Col xs={7}>
               <Jumbotron className="dropdownMarket">

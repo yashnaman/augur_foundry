@@ -27,7 +27,9 @@ body {
   border: #2cb3a7;
 }
 
-.mintShare:hover, .mintShare:focus, .mintShare:hover {
+.mintShare:hover,
+.mintShare:focus,
+.mintShare:hover {
   background: #1ca397;
 }
 
@@ -58,12 +60,12 @@ body {
 }
 
 .col-7 {
-    flex: 0 0 54.333333%;
+  flex: 0 0 54.333333%;
 }
 
 .col-8 {
-    flex: 0 0 100%;
-    max-width: 100%;
+  flex: 0 0 100%;
+  max-width: 100%;
 }
 
 .table {
@@ -82,25 +84,29 @@ td {
 
 .btn-danger {
   padding: 5px 10px;
-  background-color: #B65739;
+  background-color: #b65739;
   border-color: #b7b7b7;
 }
 
-.btn-danger:hover, .btn-danger:active, .btn-danger:focus {
+.btn-danger:hover,
+.btn-danger:active,
+.btn-danger:focus {
   background-color: #a64729;
   border-color: #b7b7b7;
 }
 
 .btn-secondary {
-    margin-left: 0;
-    padding: 5px 20px;
-    color: #fff;
-    background-color: #545454;
-    border-color: #6c757d;
-  }
+  margin-left: 0;
+  padding: 5px 20px;
+  color: #fff;
+  background-color: #545454;
+  border-color: #6c757d;
+}
 
-.btn-secondary:hover, .btn-secondary:active, .btn-secondary:focus {
-    background-color: #444444;
+.btn-secondary:hover,
+.btn-secondary:active,
+.btn-secondary:focus {
+  background-color: #444444;
 }
 
 .btn-success {
@@ -110,8 +116,10 @@ td {
   padding: 5px 30px !important;
 }
 
-.btn-success:hover, .btn-success:active, .btn-success:focus {
-  background:#002d0b;
+.btn-success:hover,
+.btn-success:active,
+.btn-success:focus {
+  background: #002d0b;
 }
 
 .market-column {
@@ -126,6 +134,10 @@ td {
   color: #eee;
   font-size: 1.44em !important;
   margin-top: 20px;
-  font-weight:normal;
+  font-weight: normal;
 }
-
+.topcorner {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
