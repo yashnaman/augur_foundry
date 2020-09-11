@@ -984,10 +984,10 @@ export default class App extends PureComponent {
     return (
       <Container className="p-3 mainContainer">
         <Jumbotron>
-          <Jumbotron className="topcorner">
-            <h3>
+          <Jumbotron className="topcorner oi-display">
+            <h5>
               <span style={{ color: "#FFFFFF" }}>
-                Total Money at Stake
+                Total Open Interest
                 <br />
                 <NumberFormat
                   value={this.state.totalOI}
@@ -996,7 +996,7 @@ export default class App extends PureComponent {
                   prefix={"$"}
                 />
               </span>
-            </h3>
+            </h5>
           </Jumbotron>
           <h3 className="header">
             <span style={{ color: "#FFA300" }}>AU</span>

@@ -59,6 +59,12 @@ body {
   width: 80%;
 }
 
+.col-4 {
+  flex: 0 0 40.333333%;
+  max-width: 40.333333%;
+  font-size: 93%;
+}
+
 .col-7 {
   flex: 0 0 54.333333%;
 }
@@ -140,4 +146,10 @@ td {
   position: absolute;
   top: 0;
   right: 0;
+}
+
+.oi-display {
+  margin: 1.73em;
+  padding-right: 5em;
+  color: #dedede;
 }
