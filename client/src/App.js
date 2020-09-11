@@ -86,14 +86,15 @@ export default class App extends PureComponent {
 
     let chainId = await web3.eth.net.getId();
     console.log(chainId);
-    // if (chainId != 42) {
-    //   this.openNotification(
-    //     "error",
-    //     "Wrong Network",
-    //     "Please connect to Kovan Testnet"
-    //   );
-    //   return;
-    // }
+
+    if (chainId != 42) {
+      this.openNotification(
+        "error",
+        "Wrong Network",
+        "Please connect to Kovan Testnet"
+      );
+      return;
+    }
 
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
 
@@ -160,43 +161,47 @@ export default class App extends PureComponent {
     // console.log(markets);
     this.openNotification("info", "Updating Markets...", "");
     for (let x = 0; x < markets.length; x++) {
-      let {
-        yesTokenBalance,
-        noTokenBalance,
-      } = await this.getYesNoBalancesMarketERC20(markets[x].address);
+      let wrappedBalances = await this.getYesNoBalancesMarketERC20(
+        markets[x].address
+      );
       let {
         yesTokenAddress,
         noTokenAddress,
       } = await this.getYesNoTokenAddresses(markets[x].address);
 
       let decimals = new BN(15);
-      yesTokenBalance = yesTokenBalance.mul(new BN(10).pow(new BN(2)));
-      noTokenBalance = noTokenBalance.mul(new BN(10).pow(new BN(2)));
+      wrappedBalances.yesTokenBalance = wrappedBalances.yesTokenBalance.mul(
+        new BN(10).pow(new BN(2))
+      );
+      wrappedBalances.noTokenBalance = wrappedBalances.noTokenBalance.mul(
+        new BN(10).pow(new BN(2))
+      );
       // console.log(noTokenAddres);
       // console.log(yesTokenAddress);
-      let shareTokenBlances = await this.getYesNoBalancesMarketShareToken(
+      let shareTokenBalances = await this.getYesNoBalancesMarketShareToken(
         markets[x].address
       );
-      console.log(
-        "yesTOkenBlance" +
-          x +
-          ": " +
-          web3.utils.fromWei(yesTokenBalance.toString())
-      );
+      // console.log(
+      //   "yesTOkenBlance" +
+      //     x +
+      //     ": " +
+      //     web3.utils.fromWei(wrappedBalances.yesTokenBalance.toString())
+      // );
       listData.push(
         <tr>
           <td>{markets[x].extraInfo.description}</td>
           <td>
             Yes :{" "}
             {web3.utils
-              .fromWei(shareTokenBlances.yesTokenBalance.toString())
+              .fromWei(shareTokenBalances.yesTokenBalance.toString())
               .toString()}
             <br />
             No :{" "}
-            {web3.utils.fromWei(shareTokenBlances.noTokenBalance).toString()}
+            {web3.utils.fromWei(shareTokenBalances.noTokenBalance).toString()}
           </td>
           <td>
-            Yes : {web3.utils.fromWei(yesTokenBalance).toString()} (
+            Yes :{" "}
+            {web3.utils.fromWei(wrappedBalances.yesTokenBalance).toString()} (
             <span
               style={{ color: "#ffd790", cursor: "pointer" }}
               onClick={async (event) =>
@@ -207,7 +212,10 @@ export default class App extends PureComponent {
             </span>
             )
             <br />
-            No : {web3.utils.fromWei(noTokenBalance).toString()} (
+            No : {web3.utils
+              .fromWei(wrappedBalances.noTokenBalance)
+              .toString()}{" "}
+            (
             <span
               style={{ color: "#ffd790", cursor: "pointer" }}
               onClick={async (event) =>
@@ -219,25 +227,29 @@ export default class App extends PureComponent {
             )
           </td>
           <td>
-            {(await this.checkDAICondition(markets[x].address)) ? (
-              <span>
-                <Button
-                  variant="danger"
-                  type="submit"
-                  onClick={(e) => this.wrapShare(markets[x].address)}
-                >
-                  WRAP SHARES
-                </Button>
+            {(await this.checkDAICondition(wrappedBalances)) ? (
+              (await this.checkIfMoreThanZeroShares(shareTokenBalances)) ? (
+                <span>
+                  <Button
+                    variant="danger"
+                    type="submit"
+                    onClick={(e) => this.wrapShare(markets[x].address)}
+                  >
+                    WRAP SHARES
+                  </Button>
 
-                <Button
-                  variant="secondary"
-                  className="m-left"
-                  type="submit"
-                  onClick={(e) => this.redeemDAI(markets[x].address)}
-                >
-                  REDEEM DAI
-                </Button>
-              </span>
+                  <Button
+                    variant="secondary"
+                    className="m-left"
+                    type="submit"
+                    onClick={(e) => this.redeemDAI(markets[x].address)}
+                  >
+                    REDEEM DAI
+                  </Button>
+                </span>
+              ) : (
+                <span></span>
+              )
             ) : (await this.isMarketFinalized(markets[x].address)) ? (
               <span>
                 {/* <Button
@@ -275,11 +287,15 @@ export default class App extends PureComponent {
     this.setState({ listData: listData });
   }
   async addTokenToMetamask(tokenAddress, index, outcome) {
+    const { erc20 } = this.state;
+    erc20.options.address = tokenAddress;
+    // let tokenSymbol = await erc20.methods.symbol().call();
     let tokenSymbol;
+    let decimals = await erc20.methods.decimals().call();
     if (outcome == 1) {
-      tokenSymbol = "NO" + index;
+      tokenSymbol = "NO" + (index + 1);
     } else if (outcome == 2) {
-      tokenSymbol = "YES" + index;
+      tokenSymbol = "YES" + (index + 1);
     } else {
       throw new Error("Not a valid outcome");
     }
@@ -292,7 +308,7 @@ export default class App extends PureComponent {
           options: {
             address: tokenAddress,
             symbol: tokenSymbol,
-            decimals: 18,
+            decimals: 16,
             // image: tokenImage,
           },
         },
@@ -344,7 +360,7 @@ export default class App extends PureComponent {
       console.log("numTicks: " + numTicks);
 
       let amountOfShareToBuy = weiAmount.div(numTicks);
-      console.log(web3.utils.fromWei(amountOfShareToBuy));
+      // console.log(web3.utils.fromWei(amountOfShareToBuy));
 
       //user is inouting how much DAI they want to spend
       //They should have more than they want to spend
@@ -736,7 +752,7 @@ export default class App extends PureComponent {
             erc20Wrapper.options.address,
             accounts[0]
           );
-          console.log(balanceOfWinningOutcomeWrapped.toString());
+          // console.log(balanceOfWinningOutcomeWrapped.toString());
           if (balanceOfWinningOutcomeWrapped.cmp(new BN(0)) == 0) {
             console.log("reddeem DAI called");
             this.redeemDAI(marketAddress);
@@ -783,7 +799,7 @@ export default class App extends PureComponent {
   async isMarketFinalized(marketAddress) {
     const { market } = this.state;
     market.options.address = marketAddress;
-    console.log(await market.methods.isFinalized().call());
+    // console.log(await market.methods.isFinalized().call());
     return await market.methods.isFinalized().call();
   }
 
@@ -920,19 +936,31 @@ export default class App extends PureComponent {
     };
   }
 
-  async checkDAICondition(marketAddress) {
+  async checkDAICondition(wrappedBalances) {
     const { accounts } = this.state.web3Provider;
     // console.log("accounts{0}" + accounts[0]);
     // console.log("marketAddress" + marketAddress);
 
-    let balances = await this.getYesNoBalancesMarketERC20(marketAddress);
+    // let balances = await this.getYesNoBalancesMarketERC20(marketAddress);
 
     if (
-      balances.yesTokenBalance.cmp(new BN(0)) != 0 ||
-      balances.noTokenBalance.cmp(new BN(0)) != 0
+      wrappedBalances.yesTokenBalance.cmp(new BN(0)) != 0 ||
+      wrappedBalances.noTokenBalance.cmp(new BN(0)) != 0
     )
       return false;
     else {
+      return true;
+    }
+  }
+  async checkIfMoreThanZeroShares(shareTokenBalances) {
+    if (
+      shareTokenBalances.yesTokenBalance.cmp(new BN(0)) == 0 &&
+      shareTokenBalances.noTokenBalance.cmp(new BN(0)) == 0
+    ) {
+      // console.log(false);
+      return false;
+    } else {
+      // console.log(true);
       return true;
     }
   }

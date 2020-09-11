@@ -17,7 +17,7 @@
  * phrase from a file you've .gitignored so it doesn't accidentally become public.
  *
  */
-
+require("dotenv").config();
 const PrivateKeyProvider = require("@truffle/hdwallet-provider");
 const privateKey =
   "0xfae42052f82bed612a724fec3632f325f377120592c75bb78adfcceae6470c5a";
@@ -27,9 +27,8 @@ const privateKey =
 // );
 const account = "0x913dA4198E6bE1D5f5E4a40D0667f70C0B5430Eb";
 
-// console.log(process.env.KOVAN_PROVIDER);
-const kovanInfuraProvider =
-  "https://kovan.infura.io/v3/2a1a54c3aa374385ae4531da66fdf150";
+console.log(process.env.KOVAN_PROVIDER);
+const kovanProvider = process.env.KOVAN_PROVIDER;
 //
 // const fs = require('fs');
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
@@ -68,8 +67,8 @@ module.exports = {
     //   confirmations: 0,
     // },
     kovan: {
-      networkCheckTimeout: 100000,
-      provider: () => new PrivateKeyProvider(privateKey, kovanInfuraProvider),
+      networkCheckTimeout: 10000,
+      provider: () => new PrivateKeyProvider(privateKey, kovanProvider),
       network_id: 42,
       from: account,
       gas: 8000000,
