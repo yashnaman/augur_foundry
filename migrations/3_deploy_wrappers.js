@@ -7,8 +7,8 @@ const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 
 //the goal here is to test all the function that will be available to the front end
 const contracts = require("../contracts.json").contracts;
-const addresses = require("../environment-local.json").addresses;
-const markets = require("../markets-local.json");
+const addresses = require("../environments/environmet-mainnet.json").addresses;
+const markets = require("../markets/markets-mainnet.json");
 
 const augurFoundry = new web3.eth.Contract(
   contracts["AugurFoundry.sol"].AugurFoundry.abi,
@@ -105,7 +105,7 @@ module.exports = async function (deployer) {
       markets[i].extraInfo.description + ": NO",
       markets[i].extraInfo.description + ": YES",
     ];
-    let symbols = ["NO" + i, "YES" + i];
+    let symbols = ["nTrump", "yTrump"];
     let tokenIds = await getYesNoTokenIds(markets[i].address);
 
     let numTicks = await getNumTicks(markets[i].address);
@@ -117,6 +117,7 @@ module.exports = async function (deployer) {
     let decimals = new BN(18).sub(zeros);
 
     // console.log("decimals: " + decimals);
+    console.log("creating new ERC20s");
     await augurFoundry.newERC20Wrappers(tokenIds, names, symbols, [
       decimals,
       decimals,
@@ -131,7 +132,7 @@ module.exports = async function (deployer) {
     // console.log(await augurFoundry.wrappers(tokenIds[1]));
   }
 
-  await fs.writeFile("markets-local.json", JSON.stringify(markets));
+  await fs.writeFile("./markets/markets-mainnet.json", JSON.stringify(markets));
 
   //we will also finalize two markets to make the tests work
 };

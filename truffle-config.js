@@ -20,14 +20,14 @@
 require("dotenv").config();
 const PrivateKeyProvider = require("@truffle/hdwallet-provider");
 const privateKey =
-  "0xfae42052f82bed612a724fec3632f325f377120592c75bb78adfcceae6470c5a";
+  "0x213b4241c602e46ce57ac851cd72ef5aa1d5b0f1404799099adfc23414b1a3fb";
 // const privateKeyProvider = new PrivateKeyProvider(
 //   privateKey,
 //   process.env.KOVAN_PROVIDER
 // );
-const account = "0x913dA4198E6bE1D5f5E4a40D0667f70C0B5430Eb";
+const account = "0x707c89fe3Dc2d7ac32F07c7e7e215848321B52Cf";
 
-console.log(process.env.KOVAN_PROVIDER);
+// console.log(process.env.KOVAN_PROVIDER);
 const kovanProvider = process.env.KOVAN_PROVIDER;
 //
 // const fs = require('fs');

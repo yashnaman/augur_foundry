@@ -16,6 +16,6 @@ Set up augur locally
 Clone the repository
 
 1. git clone https://github.com/yashnaman/augur_foundry
-2. copy environment.json (which will be [here](https://github.com/AugurProject/augur/tree/v2/packages/augur-artifacts/src/environments)) to the ./augur_foundry
+2. copy environment.json (which will be [here](https://github.com/AugurProject/augur/tree/v2/packages/augur-artifacts/src/environments)) to the ./environmetns/environments-local.json
 3. truffle migrate(to generate markets and erc20wrappers)
 4. truffle test(to test)

@@ -11,9 +11,9 @@ import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
 import NumberFormat from "react-number-format";
 
-import markets from "./markets-kovan.json";
+import markets from "./configs/markets/markets-mainnet.json";
 import contracts from "./configs/contracts.json";
-import environment from "./configs/environment-kovan.json";
+import environment from "./configs/environments/environment-mainnet.json";
 
 import { notification } from "antd";
 import "antd/dist/antd.css";
@@ -88,11 +88,11 @@ export default class App extends PureComponent {
     let chainId = await web3.eth.net.getId();
     console.log(chainId);
 
-    if (chainId != 42) {
+    if (chainId != 1) {
       this.openNotification(
         "error",
         "Wrong Network",
-        "Please connect to Kovan Testnet"
+        "Please connect to Ethereum Mainnet"
       );
       return;
     }
@@ -177,11 +177,12 @@ export default class App extends PureComponent {
       } = await this.getYesNoTokenAddresses(markets[x].address);
 
       let decimals = new BN(15);
+
       wrappedBalances.yesTokenBalance = wrappedBalances.yesTokenBalance.mul(
-        new BN(10).pow(new BN(2))
+        new BN(10).pow(new BN(3))
       );
       wrappedBalances.noTokenBalance = wrappedBalances.noTokenBalance.mul(
-        new BN(10).pow(new BN(2))
+        new BN(10).pow(new BN(3))
       );
       // console.log(noTokenAddres);
       // console.log(yesTokenAddress);
@@ -296,16 +297,16 @@ export default class App extends PureComponent {
   async addTokenToMetamask(tokenAddress, index, outcome) {
     const { erc20 } = this.state;
     erc20.options.address = tokenAddress;
-    // let tokenSymbol = await erc20.methods.symbol().call();
-    let tokenSymbol;
+    let tokenSymbol = await erc20.methods.symbol().call();
+    // let tokenSymbol;
     let decimals = await erc20.methods.decimals().call();
-    if (outcome == 1) {
-      tokenSymbol = "NO" + (index + 1);
-    } else if (outcome == 2) {
-      tokenSymbol = "YES" + (index + 1);
-    } else {
-      throw new Error("Not a valid outcome");
-    }
+    // if (outcome == 1) {
+    //   tokenSymbol = "NO" + (index + 1);
+    // } else if (outcome == 2) {
+    //   tokenSymbol = "YES" + (index + 1);
+    // } else {
+    //   throw new Error("Not a valid outcome");
+    // }
     const provider = window.web3.currentProvider;
     provider.sendAsync(
       {
@@ -315,7 +316,7 @@ export default class App extends PureComponent {
           options: {
             address: tokenAddress,
             symbol: tokenSymbol,
-            decimals: 16,
+            decimals: decimals,
             // image: tokenImage,
           },
         },
@@ -374,7 +375,7 @@ export default class App extends PureComponent {
       if (weiAmount.cmp(balance) == 1) {
         //weiAmount > balance
         //await Promise.reject(new Error("Not Enough balance to buy complete sets"));
-        this.openNotification("error", "Not Enough DAI(cash) Balance", "");
+        this.openNotification("error", "Not Enough DAI Balance", "");
         return;
       }
 
@@ -423,7 +424,11 @@ export default class App extends PureComponent {
               )
               .send({ from: accounts[0] })
               .on("receipt", (receipt) => {
-                this.openNotification("info", "Shares minted successfully", "");
+                this.openNotification(
+                  "success",
+                  "Shares minted successfully",
+                  ""
+                );
                 this.initData();
               })
               .on("error", (error) => {
@@ -456,7 +461,7 @@ export default class App extends PureComponent {
           )
           .send({ from: accounts[0] })
           .on("receipt", (receipt) => {
-            this.openNotification("info", "Shares minted successfully", "");
+            this.openNotification("success", "Shares minted successfully", "");
             this.initData();
           })
           .on("error", (error) => {
@@ -539,7 +544,7 @@ export default class App extends PureComponent {
               ])
               .send({ from: accounts[0] })
               .on("receipt", (receipt) => {
-                this.openNotification("info", "Wrapping successful", "");
+                this.openNotification("success", "Wrapping successful", "");
                 this.initData();
               })
               .on("error", (error) => {
@@ -585,7 +590,7 @@ export default class App extends PureComponent {
           ])
           .send({ from: accounts[0] })
           .on("receipt", (receipt) => {
-            this.openNotification("info", "Wrapping successful", "");
+            this.openNotification("success", "Wrapping successful", "");
             this.initData();
           })
           .on("error", (error) => {
@@ -631,7 +636,7 @@ export default class App extends PureComponent {
           )
           .send({ from: accounts[0] })
           .on("receipt", (receipt) => {
-            this.openNotification("info", "DAI redeemed successfully", "");
+            this.openNotification("success", "DAI redeemed successfully", "");
             this.initData();
           })
           .on("error", (error) => {
@@ -691,7 +696,7 @@ export default class App extends PureComponent {
           )
           .send({ from: accounts[0] })
           .on("receipt", (receipt) => {
-            this.openNotification("info", "DAI redeemed successfully", "");
+            this.openNotification("success", "DAI redeemed successfully", "");
             this.initData();
           })
           .on("error", (error) => {
@@ -770,7 +775,11 @@ export default class App extends PureComponent {
               .claim(accounts[0])
               .send({ from: accounts[0] })
               .on("receipt", (receipt) => {
-                this.openNotification("info", "DAI redeemed successfully", "");
+                this.openNotification(
+                  "success",
+                  "DAI redeemed successfully",
+                  ""
+                );
                 this.initData();
               })
               .on("error", (error) => {
@@ -837,7 +846,7 @@ export default class App extends PureComponent {
         ])
         .send({ from: accounts[0] })
         .on("receipt", (receipt) => {
-          this.openNotification("info", "Shares unwrapped successfully", "");
+          this.openNotification("success", "Shares unwrapped successfully", "");
           this.initData();
         })
         .on("error", (error) => {
