@@ -8,8 +8,8 @@ const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 
 //the goal here is to test all the function that will be available to the front end
 const contracts = require("../contracts.json").contracts;
-const addresses = require("../environment.json").addresses;
-const markets = require("../markets.json");
+const addresses = require("../environments/environment-local.json").addresses;
+const markets = require("../markets/markets-local.json");
 
 const augurFoundry = new web3.eth.Contract(
   contracts["AugurFoundry.sol"].AugurFoundry.abi,
@@ -89,7 +89,7 @@ const createYesNoMarket = async function (marketCreator, marketExtraInfo) {
   let designatedReporterAddress = marketCreator;
   // let extraInfo = "none";
   let extraInfo = JSON.stringify(marketExtraInfo);
-  console.log("Before Market Creation");
+  console.log("Creating a new YES/NO market");
   await universe.methods
     .createYesNoMarket(
       endTime.toString(),
@@ -128,7 +128,7 @@ const buyCompleteSets = async function (marketAddress, account, amount) {
       .approve(augur.options.address, MAX_UINT256.toString())
       .send({ from: account });
   }
-  console.log("Before buy complete sets");
+  console.log("Buying complete sets");
   // console.log(marketAddress);
   //buy the complete sets
   await shareToken.methods
@@ -170,7 +170,7 @@ const wrapMultipleTokens = async function (tokenIds, account, amounts) {
       .setApprovalForAll(augurFoundry.options.address, true)
       .send({ from: account });
   }
-  console.log("before Wrapping");
+  console.log("Wrapping multiple tokens");
   await augurFoundry.methods
     .wrapMultipleTokens(tokenIds, account, amounts)
     .send({ from: account });
@@ -237,7 +237,11 @@ const claimWinningsWhenWrapped = async function (marketAddress, account) {
           .wrappers(tokenIds[i])
           .call();
         //no claim for the user
-        await erc20Wrapper.methods.claim(account).send({ from: account });
+        console.log("claiming");
+        let recipet = await erc20Wrapper.methods
+          .claim(account)
+          .send({ from: account });
+        return recipet;
       }
     }
   }

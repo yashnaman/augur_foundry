@@ -7,13 +7,8 @@ const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 
 //the goal here is to test all the function that will be available to the front end
 const contracts = require("../contracts.json").contracts;
-const addresses = require("../environment-local.json").addresses;
-const markets = require("../markets-local.json");
-
-const augurFoundry = new web3.eth.Contract(
-  contracts["AugurFoundry.sol"].AugurFoundry.abi,
-  markets[0].augurFoundryAddress
-);
+const addresses = require("../environments/environment-local.json").addresses;
+const markets = require("../markets/markets-local.json");
 
 const universe = new web3.eth.Contract(
   contracts["reporting/Universe.sol"].Universe.abi,
@@ -34,16 +29,6 @@ const repToken = erc20;
 const cash = new web3.eth.Contract(
   contracts["Cash.sol"].Cash.abi,
   addresses.Cash
-);
-const shareToken = new web3.eth.Contract(
-  contracts["reporting/ShareToken.sol"].ShareToken.abi,
-  addresses.ShareToken
-);
-const market = new web3.eth.Contract(
-  contracts["reporting/Market.sol"].Market.abi
-);
-const disputeWindow = new web3.eth.Contract(
-  contracts["reporting/DisputeWindow.sol"].DisputeWindow.abi
 );
 
 const with18Decimals = function (amount) {
@@ -90,7 +75,7 @@ const createYesNoMarket = async function (marketCreator, marketExtraInfo) {
   let designatedReporterAddress = marketCreator;
   // let extraInfo = "none";
   let extraInfo = JSON.stringify(marketExtraInfo);
-  console.log("Before Market Creation");
+  // console.log("Creating a new YES/NO Market");
   let tx = await universe.methods
     .createYesNoMarket(
       endTime.toString(),
@@ -118,28 +103,8 @@ const getMarketFormTx = function (tx) {
   let marketAddress = web3.eth.abi.decodeParameter("address", temp);
   return marketAddress;
 };
-//NOTE: figure out a way to do this wothout making a call to the blockchain
-const getTokenId = async function (marketAddress, outcome) {
-  return await shareToken.methods.getTokenId(marketAddress, outcome).call();
-};
-const getYesNoTokenIds = async function (yesNoMarketAddress) {
-  let tokenIds = [];
-  tokenIds.push(await getTokenId(yesNoMarketAddress, OUTCOMES.NO));
-  tokenIds.push(await getTokenId(yesNoMarketAddress, OUTCOMES.YES));
-  return tokenIds;
-};
-const getNumTicks = async function (marketAddress) {
-  market.options.address = marketAddress;
-  return new BN(await market.methods.getNumTicks().call());
-};
-//Deploy 4 markets
-//And Right the info in a file
-const ERC20Wrapper = artifacts.require("ERC20Wrapper");
-const AugurFoundry = artifacts.require("AugurFoundry");
-
 module.exports = async function (deployer) {
   let accounts = await web3.eth.getAccounts();
-  console.log(accounts);
 
   // // console.log(accounts);
   // // console.log(markets);
@@ -157,7 +122,7 @@ module.exports = async function (deployer) {
     // console.log("Market" + i + ":" + markets[i].address);
     // console.log(await getLatestMarket());
   }
-  await fs.writeFile("markets-local.json", JSON.stringify(markets));
+  await fs.writeFile("./markets/markets-local.json", JSON.stringify(markets));
 
   // console.log(markets);
 

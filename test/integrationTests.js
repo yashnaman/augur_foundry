@@ -1,5 +1,10 @@
-const { BN, time, constants } = require("@openzeppelin/test-helpers");
-const { inTransaction } = require("@openzeppelin/test-helpers/src/expectEvent");
+const {
+  BN,
+  time,
+  constants,
+  expectEvent,
+} = require("@openzeppelin/test-helpers");
+
 const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 const { expect } = require("chai");
 
@@ -10,26 +15,27 @@ const {
   getBalanceOfERC20,
   getTokenId,
   getYesNoTokenIds,
-  shareTokenApproveForAll,
   getCashFromFaucet,
   unWrapMultipleTokens,
   wrapMultipleTokens,
   createYesNoWrappersForMarket,
   endMarket,
-  claimTradingProceeds,
-  getNumTicks,
   claimWinningsWhenWrapped,
 } = require("../scripts/utils");
 
-const markets = require("../markets.json");
+const markets = require("../markets/markets-local.json");
 
 // const ERC20Wrapper = artifacts.require("ERC20Wrapper");
 // const AugurFoundry = artifacts.require("AugurFoundry");
 
 //the goal here is to test all the function that will be available to the front end
 const contracts = require("../contracts.json").contracts;
-const addresses = require("../environment.json").addresses;
+const addresses = require("../environments/environment-local.json").addresses;
 
+const augurFoundry = new web3.eth.Contract(
+  contracts["AugurFoundry.sol"].AugurFoundry.abi,
+  markets[0].augurFoundryAddress
+);
 const universe = new web3.eth.Contract(
   contracts["reporting/Universe.sol"].Universe.abi,
   addresses.Universe
@@ -72,7 +78,7 @@ const outComes = [0, 1, 2];
 const getBlanceOfShareToken = async function (address, tokenId) {
   return await shareToken.methods.balanceOf(address, tokenId).call();
 };
-
+var wrappers = [];
 contract("Intergration test", function (accounts) {
   //There are only three accounts that geth exposes
   //give tem meaning ful name later
@@ -89,7 +95,12 @@ contract("Intergration test", function (accounts) {
     );
     market.options.address = marketAddress;
 
-    await createYesNoWrappersForMarket(market.options.address, marketCreator);
+    wrappers = await createYesNoWrappersForMarket(
+      market.options.address,
+      marketCreator
+    );
+    //create wrappers
+
     // console.log(market.options.address);
   });
   //lets check market's info
@@ -186,7 +197,7 @@ contract("Intergration test", function (accounts) {
       let delta = cashBalanceTestAccountAfter.sub(cashBalanceTestAccount);
       let numTicks = 1000;
       //fees = 10%
-      //Here there are some fees being deducted thus the constanst 100 is the fees(10%)
+      //Here there are some fees being deducted thus the constanst 100 is the fees(10% of 1000*10^18)
       for (outcome in outComes) {
         expect(delta).to.be.bignumber.equal(
           new BN(balanceOfERC1155s[outcome])
@@ -195,8 +206,6 @@ contract("Intergration test", function (accounts) {
         );
       }
       // console.log(delta.toString());
-      //expect them to be have cash
-      //how much?
     });
     it("when tokens are not wrapped", async function () {
       await sellCompleteSets(
@@ -246,8 +255,7 @@ contract("Intergration test", function (accounts) {
       );
     });
   });
-  //so we need unwrap users tokens before redeeming it
-  //otherwise there can be case where user has some wrapped and some unwrapped and only unwrapped tokens will be redeemable for DAI
+
   describe("should be able to claim winning proceeds", async function () {
     const amount = THOUSAND;
     var cashBalanceTestAccount;
@@ -261,11 +269,10 @@ contract("Intergration test", function (accounts) {
       //to sell you to buy it first
       await getCashFromFaucet(testAccount, amount.mul(numTicks));
 
-      cashBalanceTestAccount = await getBalanceOfERC20(cash, testAccount);
-      console.log("cashBalanceBefore:" + cashBalanceTestAccount.toString());
-
       //add revert test when the balance is less than amount * numticks
       await buyCompleteSets(market.options.address, testAccount, amount);
+
+      cashBalanceTestAccount = await getBalanceOfERC20(cash, testAccount);
       balanceOfERC1155s = [];
       for (outcome in outComes) {
         tokenId = await getTokenId(market.options.address, outcome);
@@ -288,35 +295,73 @@ contract("Intergration test", function (accounts) {
         //every thing just got sold for the cash
         expect(balance).to.be.bignumber.equal("0");
       }
-      // console.log(balanceOfERC1155sAfter);
-
       cashBalanceTestAccountAfter = await getBalanceOfERC20(cash, testAccount);
-      console.log("cashBalanceAfter:" + cashBalanceTestAccountAfter.toString());
+      let numTicks = new BN(1000);
       let delta = cashBalanceTestAccountAfter.sub(cashBalanceTestAccount);
-      let numTicks = 1000;
-      //fees = 10%
-      //NOTE: ADD the exact test here
-      // for (outcome in outComes) {
-      //   expect(delta).to.be.bignumber.equal(
-      //     new BN(balanceOfERC1155s[outcome])
-      //       .mul(new BN(numTicks))
-      //       .sub(with18Decimals(new BN(100)))
-      //   );
-      // }
-      // console.log(delta.toString());
+      let fees = amount.mul(new BN(10)).div(new BN(100));
+      expect(delta).to.be.bignumber.equal(amount.mul(numTicks).sub(fees));
+      //     // console.log(cashBalanceTestAccountAfter);
     });
-    //This is already tested
-    // it("when tokens are not wrapped and market is finalized", async function () {
-    //   let tokenIds = await getYesNoTokenIds(market.options.address);
-    //   //need to give approval to the augur foundry contract
-    //   await claimTradingProceeds(market.options.address, testAccount);
-    // });
     it("when tokens are wrapped and market is finalized", async function () {
       //we should not have a claim multiple tokens method because we know
       //wrap the tokens
       let tokenIds = await getYesNoTokenIds(market.options.address);
       await wrapMultipleTokens(tokenIds, testAccount, [amount, amount]);
-      await claimWinningsWhenWrapped(market.options.address, testAccount);
+      let web3Receipt = await claimWinningsWhenWrapped(
+        market.options.address,
+        testAccount
+      );
+      // console.log(web3Receipt);
+      //10%fees
+      let fees = amount.mul(new BN(10)).div(new BN(100));
+      let numTicks = new BN(1000);
+
+      //YES is the winning outcome
+      let yesWrapperAddress = await augurFoundry.methods
+        .wrappers(tokenIds[1])
+        .call();
+      //cash gets from shareToken to the wrapper contract
+      await expectEvent.inTransaction(
+        web3Receipt.transactionHash,
+        cash,
+        "Transfer",
+        {
+          from: shareToken.options.address,
+          to: yesWrapperAddress,
+          value: amount.mul(numTicks).sub(fees),
+        }
+      );
+      await expectEvent.inTransaction(
+        web3Receipt.transactionHash,
+        augur,
+        "TradingProceedsClaimed",
+        {
+          universe: universe.options.address,
+          market: market.options.address,
+          outcome: OUTCOMES.YES.toString(),
+          numShares: amount,
+          numPayoutTokens: amount.mul(numTicks).sub(fees), //10%fees
+          fees: fees,
+        }
+      );
+      //The ERC20 wrappers get burnt
+      await expectEvent.inTransaction(
+        web3Receipt.transactionHash,
+        cash,
+        "Transfer",
+        { from: testAccount, to: ZERO_ADDRESS, value: amount }
+      );
+      //Cash gets transferred to testAccount
+      await expectEvent.inTransaction(
+        web3Receipt.transactionHash,
+        cash,
+        "Transfer",
+        {
+          from: yesWrapperAddress,
+          to: testAccount,
+          value: amount.mul(numTicks).sub(fees),
+        }
+      );
     });
   });
 });

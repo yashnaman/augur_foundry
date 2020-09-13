@@ -2,27 +2,13 @@
 // const Web3 = require("web3");
 const fs = require("fs").promises;
 
-const { BN, time, constants } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, MAX_UINT256 } = constants;
+const { BN, constants } = require("@openzeppelin/test-helpers");
 
 //the goal here is to test all the function that will be available to the front end
 const contracts = require("../contracts.json").contracts;
-const addresses = require("../environments/environmet-mainnet.json").addresses;
-const markets = require("../markets/markets-mainnet.json");
+const addresses = require("../environments/environment-local.json").addresses;
+const markets = require("../markets/markets-local.json");
 
-const augurFoundry = new web3.eth.Contract(
-  contracts["AugurFoundry.sol"].AugurFoundry.abi,
-  markets[0].augurFoundryAddress
-);
-
-const universe = new web3.eth.Contract(
-  contracts["reporting/Universe.sol"].Universe.abi,
-  addresses.Universe
-);
-const augur = new web3.eth.Contract(
-  contracts["Augur.sol"].Augur.abi,
-  addresses.Augur
-);
 // const timeControlled = new web3.eth.Contract(
 //   contracts["TimeControlled.sol"].TimeControlled.abi,
 //   addresses.TimeControlled
@@ -77,7 +63,7 @@ const AugurFoundry = artifacts.require("AugurFoundry");
 
 module.exports = async function (deployer) {
   let accounts = await web3.eth.getAccounts();
-  console.log(accounts);
+  // console.log(accounts);
   //   console.log(markets);
 
   // //deploy the augur foundry
@@ -98,7 +84,6 @@ module.exports = async function (deployer) {
 
   markets[0].augurFoundryAddress = augurFoundry.address;
   // await deployer.deploy(AugurFoundry);
-  //I want to write this somewhere that can be used after by the UI
 
   for (i in markets) {
     let names = [
@@ -117,7 +102,7 @@ module.exports = async function (deployer) {
     let decimals = new BN(18).sub(zeros);
 
     // console.log("decimals: " + decimals);
-    console.log("creating new ERC20s");
+    // console.log("creating new ERC20s");
     await augurFoundry.newERC20Wrappers(tokenIds, names, symbols, [
       decimals,
       decimals,
@@ -132,7 +117,8 @@ module.exports = async function (deployer) {
     // console.log(await augurFoundry.wrappers(tokenIds[1]));
   }
 
-  await fs.writeFile("./markets/markets-mainnet.json", JSON.stringify(markets));
+  await fs.writeFile("./markets/markets-local.json", JSON.stringify(markets));
+  //This can be used by the UI
 
-  //we will also finalize two markets to make the tests work
+  //we can finalize the markets to test
 };
