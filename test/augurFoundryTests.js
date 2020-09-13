@@ -8,26 +8,29 @@ const { expect } = require("chai");
 const { ZERO_ADDRESS } = constants;
 
 const MockShareToken = artifacts.require("MockShareToken");
+const MockCash = artifacts.require("MockCash");
 const ERC20Wrapper = artifacts.require("ERC20Wrapper");
 const AugurFoundry = artifacts.require("AugurFoundry");
 
 contract("ERC20Wrapper", function (accounts) {
-  const [initialHolder, mockCashAddress] = accounts;
-  const tokenId = 1;
+  const [initialHolder, otherAccount, anotherAccount] = accounts;
+  var tokenId;
   const decimals = 18;
   const uri = "";
   const name = "test";
   const symbol = "TST";
-  const initialSupply = new BN(1000);
+  const initialSupply = new BN(1000).mul(new BN(10).pow(new BN(18))); //1000 ether
   beforeEach(async function () {
+    this.mockCash = await MockCash.new();
     //create a new MockShareToken
-    this.mockShareToken = await MockShareToken.new(uri, mockCashAddress);
+    this.mockShareToken = await MockShareToken.new(uri, this.mockCash.address);
+    tokenId = await this.mockShareToken.tokenId();
 
     //deploy the augur foundry contract
     //We should deploy a mock augur foundry instead if we want to do the unit tests
     this.augurFoundry = await AugurFoundry.new(
       this.mockShareToken.address,
-      mockCashAddress
+      this.mockCash.address
     );
 
     //Create a new erc20 wrapper for a tokenId of the shareTOken
@@ -145,6 +148,46 @@ contract("ERC20Wrapper", function (accounts) {
       });
     });
   });
+  describe("Should calim winnings", async function () {
+    var cashAmount;
+    let tokenHolders = [initialHolder, otherAccount, anotherAccount];
+    beforeEach(async function () {
+      cashAmount = await this.mockShareToken.amount();
+
+      for (i in tokenHolders) {
+        await this.mockShareToken.mint(tokenHolders[i], tokenId, initialSupply);
+        await this.mockShareToken.setApprovalForAll(
+          this.augurFoundry.address,
+          true,
+          {
+            from: tokenHolders[i],
+          }
+        );
+        await this.augurFoundry.wrapTokens(
+          tokenId,
+          tokenHolders[i],
+          initialSupply,
+          {
+            from: tokenHolders[i],
+          }
+        );
+      }
+    });
+    it("when the outcome is the winning outcome", async function () {
+      for (i in tokenHolders) {
+        await this.erc20Wrapper.claim(tokenHolders[i], {
+          from: tokenHolders[i],
+        });
+        expect(
+          await this.erc20Wrapper.balanceOf(tokenHolders[i])
+        ).to.be.bignumber.equal("0");
+        //Not exaclt div by three becuse there is an error of 10^-18 magnitude
+        expect(
+          await this.mockCash.balanceOf(tokenHolders[i])
+        ).to.be.bignumber.at.least(cashAmount.div(new BN(tokenHolders.length)));
+      }
+    });
+  });
 });
 
 contract("AugurFoundry", function (accounts) {
@@ -154,7 +197,7 @@ contract("AugurFoundry", function (accounts) {
   const uri = "";
   const names = ["test1", "test2"];
   const symbols = ["TST1", "TST2"];
-  const initialSupply = new BN(1000);
+  const initialSupply = new BN(1000).mul(new BN(10).pow(new BN(18))); //1000 ether
   beforeEach(async function () {
     //create a new MockShareToken
     this.mockShareToken = await MockShareToken.new(uri, ZERO_ADDRESS);
