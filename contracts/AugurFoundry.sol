@@ -59,7 +59,7 @@ contract AugurFoundry {
         string[] memory _symbols,
         uint8[] memory _decimals
     ) public {
-        assert(
+        require(
             _tokenIds.length == _names.length &&
                 _tokenIds.length == _symbols.length
         );
