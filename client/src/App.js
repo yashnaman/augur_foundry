@@ -11,9 +11,9 @@ import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
 import NumberFormat from "react-number-format";
 
-import markets from "./configs/markets/markets-kovan.json";
+import markets from "./configs/markets/markets-mainnet.json";
 import contracts from "./configs/contracts.json";
-import environment from "./configs/environments/environment-kovan.json";
+import environment from "./configs/environments/environment-mainnet.json";
 
 import { notification } from "antd";
 import "antd/dist/antd.css";
@@ -86,9 +86,9 @@ export default class App extends PureComponent {
     const { web3 } = this.state.web3Provider;
 
     let chainId = await web3.eth.net.getId();
-    console.log(chainId);
+    console.log("chainId: " + chainId);
 
-    if (chainId != 42) {
+    if (chainId != 1) {
       this.openNotification(
         "error",
         "Wrong Network",
@@ -189,12 +189,17 @@ export default class App extends PureComponent {
       let shareTokenBalances = await this.getYesNoBalancesMarketShareToken(
         markets[x].address
       );
-      // console.log(
-      //   "yesTOkenBlance" +
-      //     x +
-      //     ": " +
-      //     web3.utils.fromWei(wrappedBalances.yesTokenBalance.toString())
-      // );
+      let isMoreThanZeroShares = await this.checkIfMoreThanZeroShares(
+        shareTokenBalances
+      );
+      let isMoreThanZeroERC20s = await this.checkIfMoreThanZeroERC20s(
+        wrappedBalances
+      );
+      let marketFinalized = await this.isMarketFinalized(markets[x].address);
+      // console.log(isMoreThanZeroShares);
+      // console.log(isMoreThanZeroERC20s);
+      // console.log(x);
+
       listData.push(
         <tr>
           <td>{markets[x].extraInfo.description}</td>
@@ -235,9 +240,30 @@ export default class App extends PureComponent {
             )
           </td>
           <td>
-            {(await this.checkDAICondition(wrappedBalances)) ? (
-              (await this.checkIfMoreThanZeroShares(shareTokenBalances)) ? (
+            {isMoreThanZeroShares || isMoreThanZeroERC20s ? (
+              marketFinalized ? (
                 <span>
+                  <Button
+                    variant="secondary"
+                    className="m-left"
+                    type="submit"
+                    onClick={(e) =>
+                      this.claimWinningsWhenWrapped(markets[x].address)
+                    }
+                  >
+                    REDEEM DAI
+                  </Button>
+                </span>
+              ) : isMoreThanZeroShares && isMoreThanZeroERC20s ? (
+                <span>
+                  <Button
+                    variant="success"
+                    className="m-left"
+                    type="submit"
+                    onClick={(e) => this.unwrapShares(markets[x].address)}
+                  >
+                    UNWRAP
+                  </Button>
                   <Button
                     variant="danger"
                     type="submit"
@@ -255,37 +281,35 @@ export default class App extends PureComponent {
                     REDEEM DAI
                   </Button>
                 </span>
-              ) : (
-                <span></span>
-              )
-            ) : (await this.isMarketFinalized(markets[x].address)) ? (
-              <span>
-                {/* <Button
-                  variant="danger"
-                  type="submit"
-                  onClick={(e) => this.wrapShare(markets[x].address)}
-                >
-                  WRAP SHARES
-                </Button> */}
+              ) : isMoreThanZeroERC20s ? (
                 <Button
-                  variant="secondary"
-                  className="m-left"
+                  variant="success"
                   type="submit"
-                  onClick={(e) =>
-                    this.claimWinningsWhenWrapped(markets[x].address)
-                  }
+                  onClick={(e) => this.unwrapShares(markets[x].address)}
                 >
-                  REDEEM DAI
-                </Button>{" "}
-              </span>
+                  UNWRAP
+                </Button>
+              ) : (
+                <span>
+                  <Button
+                    variant="danger"
+                    type="submit"
+                    onClick={(e) => this.wrapShare(markets[x].address)}
+                  >
+                    WRAP SHARES
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="m-left"
+                    type="submit"
+                    onClick={(e) => this.redeemDAI(markets[x].address)}
+                  >
+                    REDEEM DAI
+                  </Button>
+                </span>
+              )
             ) : (
-              <Button
-                variant="success"
-                type="submit"
-                onClick={(e) => this.unwrapShares(markets[x].address)}
-              >
-                UNWRAP
-              </Button>
+              <span></span>
             )}
           </td>
         </tr>
@@ -351,7 +375,6 @@ export default class App extends PureComponent {
 
     const { cash, shareToken, market, augur } = this.state;
 
-    // const marketIds = e.target.elements.marketIds.value;
     const marketAddress = e.target.elements.marketIds.value;
     //Here the amount is the amoun of DAI users wants to spend to buy shares
     let amount = e.target.elements.amount.value;
@@ -393,22 +416,7 @@ export default class App extends PureComponent {
         cash.methods
           .approve(augur.options.address, constants.MAX_UINT256.toString())
           .send({ from: accounts[0] })
-          .on("error", (error) => {
-            if (error.message.includes("User denied transaction signature")) {
-              this.openNotification(
-                "error",
-                "User denied signature",
-                "sign the transaction to be able to execute the transaction"
-              );
-            } else {
-              this.openNotification(
-                "error",
-                "There was an error in executing the transaction",
-                ""
-              );
-            }
-          })
-          .on("receipt", function (receipt) {
+          .on("receipt", (receipt) => {
             console.log("Before buy complete sets");
             this.openNotification(
               "info",
@@ -448,6 +456,21 @@ export default class App extends PureComponent {
                   );
                 }
               });
+          })
+          .on("error", (error) => {
+            if (error.message.includes("User denied transaction signature")) {
+              this.openNotification(
+                "error",
+                "User denied signature",
+                "sign the transaction to be able to execute the transaction"
+              );
+            } else {
+              this.openNotification(
+                "error",
+                "There was an error in executing the transaction",
+                ""
+              );
+            }
           });
       } else {
         this.openNotification("info", "Minting shares", "");
@@ -659,6 +682,11 @@ export default class App extends PureComponent {
         //this should be a function
         let tokenIds = [];
         tokenIds.push(
+          await shareToken.methods
+            .getTokenId(marketAddress, OUTCOMES.INVALID)
+            .call()
+        );
+        tokenIds.push(
           await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
         );
         tokenIds.push(
@@ -667,20 +695,31 @@ export default class App extends PureComponent {
             .call()
         );
 
-        //get the balance of both tokenIds and give the amoun on which is less
-        let yesShareBalance = new BN(
-          await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
-        );
-        let noShareBalance = new BN(
+        //get the balance of all tokenIds and give the amoun on which is less
+        let invalidShareBalance = new BN(
           await shareToken.methods.balanceOf(accounts[0], tokenIds[0]).call()
         );
-        //NOTE: add the invalid share amount in comaparision too.
+        let noShareBalance = new BN(
+          await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
+        );
+        let yesShareBalance = new BN(
+          await shareToken.methods.balanceOf(accounts[0], tokenIds[2]).call()
+        );
         // console.log(yesShareBalance);
-        let amount =
-          yesShareBalance.cmp(noShareBalance) == 1
-            ? noShareBalance
-            : yesShareBalance;
-        // console.log(amount);
+
+        let amount = BN.min(
+          invalidShareBalance,
+          BN.min(noShareBalance, yesShareBalance)
+        );
+        if (amount.cmp(new BN(0)) == 0) {
+          this.openNotification(
+            "error",
+            "Not enough Balance",
+            "You need shares of every outcome(YES/NO/INVALID) to be able to redeem DAI"
+          );
+          return;
+        }
+
         this.openNotification(
           "info",
           "Redeeming DAI by selling your shares",
@@ -766,11 +805,23 @@ export default class App extends PureComponent {
           );
           // console.log(balanceOfWinningOutcomeWrapped.toString());
           if (balanceOfWinningOutcomeWrapped.cmp(new BN(0)) == 0) {
-            console.log("reddeem DAI called");
-            this.redeemDAI(marketAddress);
+            console.log("redeem DAI called");
+            let shareTokenBalances = await this.getYesNoBalancesMarketShareToken(
+              marketAddress
+            );
+            if (await this.checkIfMoreThanZeroShares(shareTokenBalances)) {
+              this.redeemDAI(marketAddress);
+            } else {
+              this.openNotification(
+                "error",
+                "You do not have the winnng outcome shares",
+                ""
+              );
+            }
+
             //try to sell by calling the shareToken method directly
           } else {
-            console.log("reddeem not DAI called");
+            console.log("redeem not DAI called");
             erc20Wrapper.methods
               .claim(accounts[0])
               .send({ from: accounts[0] })
@@ -952,7 +1003,7 @@ export default class App extends PureComponent {
     };
   }
 
-  async checkDAICondition(wrappedBalances) {
+  async checkIfMoreThanZeroERC20s(wrappedBalances) {
     const { accounts } = this.state.web3Provider;
     // console.log("accounts{0}" + accounts[0]);
     // console.log("marketAddress" + marketAddress);
@@ -960,8 +1011,8 @@ export default class App extends PureComponent {
     // let balances = await this.getYesNoBalancesMarketERC20(marketAddress);
 
     if (
-      wrappedBalances.yesTokenBalance.cmp(new BN(0)) != 0 ||
-      wrappedBalances.noTokenBalance.cmp(new BN(0)) != 0
+      wrappedBalances.yesTokenBalance.cmp(new BN(0)) == 0 &&
+      wrappedBalances.noTokenBalance.cmp(new BN(0)) == 0
     )
       return false;
     else {

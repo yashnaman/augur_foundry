@@ -86,11 +86,15 @@ module.exports = async function (deployer) {
   // await deployer.deploy(AugurFoundry);
 
   for (i in markets) {
-    let names = [
-      markets[i].extraInfo.description + ": NO",
-      markets[i].extraInfo.description + ": YES",
-    ];
-    let symbols = ["nTrump", "yTrump"];
+    let names = [markets[i].noName, markets[i].yesName];
+    // console.log(names);
+    let symbols = [markets[i].noSymbol, markets[i].yesSymbol];
+    // console.log(symbols);
+    if (!(names[0] && symbols[0])) {
+      //When you are deploying on local
+      names = ["NO", "YES"];
+      symbols = ["NO", "YES"];
+    }
     let tokenIds = await getYesNoTokenIds(markets[i].address);
 
     let numTicks = await getNumTicks(markets[i].address);
@@ -101,7 +105,7 @@ module.exports = async function (deployer) {
     }
     let decimals = new BN(18).sub(zeros);
 
-    // console.log("decimals: " + decimals);
+    console.log("decimals: " + decimals);
     // console.log("creating new ERC20s");
     await augurFoundry.newERC20Wrappers(tokenIds, names, symbols, [
       decimals,

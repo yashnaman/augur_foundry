@@ -75,7 +75,7 @@ const createYesNoMarket = async function (marketCreator, marketExtraInfo) {
   let designatedReporterAddress = marketCreator;
   // let extraInfo = "none";
   let extraInfo = JSON.stringify(marketExtraInfo);
-  // console.log("Creating a new YES/NO Market");
+  console.log("Creating a new YES/NO Market");
   let tx = await universe.methods
     .createYesNoMarket(
       endTime.toString(),
