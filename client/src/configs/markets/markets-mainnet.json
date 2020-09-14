@@ -5,7 +5,7 @@
     "extraInfo": {
       "categories": ["Politics", "US Politics", "President"],
       "description": "Will Donald Trump win the 2020 U.S. Presidential election?",
-      "longDescription": "The winning candidate will have at least 270 electoral votes to win the presidential election.\nThis market is intended to be about a Single Candidate, if this is not the case, this market should settle as 'Invalid'."
+      "longDescription": "A candidate that receives at least 270 votes in the Electoral College shall be considered the winner. In the event that no candidate receives 270 votes, the House of Representatives will decide the winner. In the event of further indecision or tie, it will be the candidate determined to be the winner under the US Constitution.\\nThis market is intended to be about a Single Candidate, if this is not the case, this market should settle as 'Invalid'."
     },
     "YesTokenAddress": "0xA4dcf6be6847A70E1C575ab3ee716225fBd17272",
     "NoTokenAddress": "0xE4b2AaC27fF6DbCB31C9525FEfB90E5a81813bb7",

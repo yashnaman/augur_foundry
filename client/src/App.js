@@ -11,9 +11,9 @@ import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
 import NumberFormat from "react-number-format";
 
-import markets from "./configs/markets/markets-mainnet.json";
+import markets from "./configs/markets/markets-kovan.json";
 import contracts from "./configs/contracts.json";
-import environment from "./configs/environments/environment-mainnet.json";
+import environment from "./configs/environments/environment-kovan.json";
 
 import { notification } from "antd";
 import "antd/dist/antd.css";
@@ -88,7 +88,7 @@ export default class App extends PureComponent {
     let chainId = await web3.eth.net.getId();
     console.log(chainId);
 
-    if (chainId != 1) {
+    if (chainId != 42) {
       this.openNotification(
         "error",
         "Wrong Network",

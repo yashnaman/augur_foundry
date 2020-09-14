@@ -5,6 +5,7 @@ const {
   expectRevert,
 } = require("@openzeppelin/test-helpers");
 const { expect } = require("chai");
+const { MAX_INT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { ZERO_ADDRESS } = constants;
 
 const MockShareToken = artifacts.require("MockShareToken");
@@ -186,6 +187,27 @@ contract("ERC20Wrapper", function (accounts) {
           await this.mockCash.balanceOf(tokenHolders[i])
         ).to.be.bignumber.at.least(cashAmount.div(new BN(tokenHolders.length)));
       }
+    });
+    it("when someone else claims for them", async function () {
+      await expectRevert(
+        this.erc20Wrapper.claim(initialHolder, {
+          from: otherAccount,
+        }),
+        "ERC20: burn amount exceeds allowance"
+      );
+      await this.erc20Wrapper.approve(otherAccount, initialSupply, {
+        from: initialHolder,
+      });
+      await this.erc20Wrapper.claim(initialHolder, {
+        from: otherAccount,
+      });
+      expect(
+        await this.erc20Wrapper.balanceOf(initialHolder)
+      ).to.be.bignumber.equal("0");
+      //Not exaclt div by three becuse there is an error of 10^-18 magnitude
+      expect(
+        await this.mockCash.balanceOf(initialHolder)
+      ).to.be.bignumber.at.least(cashAmount.div(new BN(tokenHolders.length)));
     });
   });
 });

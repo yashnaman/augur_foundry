@@ -78,11 +78,11 @@ contract ERC20Wrapper is ERC20, ERC1155Receiver {
      */
     function unWrapTokens(address _account, uint256 _amount) public {
         if (msg.sender != _account && msg.sender != augurFoundry) {
-            uint256 decreasedAllowance = allowance(_account, _msgSender()).sub(
+            uint256 decreasedAllowance = allowance(_account, msg.sender).sub(
                 _amount,
                 "ERC20: burn amount exceeds allowance"
             );
-            _approve(_account, _msgSender(), decreasedAllowance);
+            _approve(_account, msg.sender, decreasedAllowance);
         }
         _burn(_account, _amount);
 
@@ -99,7 +99,10 @@ contract ERC20Wrapper is ERC20, ERC1155Receiver {
      * It will return _account DAI if the outcome for which this wrapper is for
      * is a winning outcome.
      * Requirements:
-     *
+     *  - if msg.sender is not {_account} then {_account} should have given allowance to msg.sender
+     * of at least balanceOf(_account)
+     * This is to prevent cases where an unknowing contract has the balance and someone claims
+     * winning for them.
      * - Not really a requirement but...
      *  it makes more sense to call it when the market has finalized.
      *
@@ -120,6 +123,14 @@ contract ERC20Wrapper is ERC20, ERC1155Receiver {
             uint256 userShare = (cashBalance.mul(balanceOf(_account))).div(
                 totalSupply()
             );
+            if (msg.sender != _account) {
+                uint256 decreasedAllowance = allowance(_account, msg.sender)
+                    .sub(
+                    balanceOf(_account),
+                    "ERC20: burn amount exceeds allowance"
+                );
+                _approve(_account, msg.sender, decreasedAllowance);
+            }
             _burn(_account, balanceOf(_account));
             require(cash.transfer(_account, userShare));
         }
