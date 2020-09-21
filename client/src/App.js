@@ -7,6 +7,9 @@ import Col from "react-bootstrap/Col";
 import Jumbotron from "react-bootstrap/Jumbotron";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Popover from "react-bootstrap/Popover"
+
 import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
 import NumberFormat from "react-number-format";
@@ -203,12 +206,14 @@ export default class App extends PureComponent {
 
       listData.push(
         <tr>
+          <OverlayTrigger placement="right" overlay={this.showMarketInfoOnHover(x)}>      
           <td
-            onMouseEnter={() => this.showMarketInfoOnHover(x, true)}
-            onMouseLeave={() => this.showMarketInfoOnHover(x, false)}
+            // onMouseEnter={() => this.showMarketInfoOnHover(x, true)}
+            // onMouseLeave={() => this.showMarketInfoOnHover(x, false)}
           >
             {markets[x].extraInfo.description}
           </td>
+          </OverlayTrigger>
           <td>
             Yes :{" "}
             {web3.utils
@@ -1078,14 +1083,21 @@ export default class App extends PureComponent {
       date + " " + month + " " + year + " " + hour + ":" + min + "(UTC)";
     return time;
   }
-  showMarketInfoOnHover(marketId, isShowing) {
+  showMarketInfoOnHover(marketId) {
     // let desciption = markets[marketId].desciption;
     let longDescription = markets[marketId].extraInfo.longDescription;
     let endTimeUnix = markets[marketId].endTime;
     let date = this.timeConverter(endTimeUnix);
 
-    alert(
-      "Resolution Details: " + longDescription + "\nMarket Ends on: " + date
+    
+      //"Resolution Details: " + longDescription + "\nMarket Ends on: " + date
+    return (
+      <Popover  >
+        <Popover.Title as="h3">Info</Popover.Title>
+        <Popover.Content>
+           Resolution Details:{longDescription} <br/> Market Ends on:{date}
+        </Popover.Content>
+      </Popover>
     );
   }
   render() {
