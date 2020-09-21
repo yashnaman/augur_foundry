@@ -1062,28 +1062,29 @@ export default class App extends PureComponent {
   };
   timeConverter(UNIX_timestamp) {
     var a = new Date(UNIX_timestamp * 1000);
-    var months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    var year = a.getFullYear();
-    var month = months[a.getMonth()];
-    var date = a.getDate();
-    var hour = a.getHours();
-    var min = a.getMinutes();
-    var sec = a.getSeconds();
-    var time =
-      date + " " + month + " " + year + " " + hour + ":" + min + "(UTC)";
+    // var months = [
+    //   "Jan",
+    //   "Feb",
+    //   "Mar",
+    //   "Apr",
+    //   "May",
+    //   "Jun",
+    //   "Jul",
+    //   "Aug",
+    //   "Sep",
+    //   "Oct",
+    //   "Nov",
+    //   "Dec",
+    // ];
+    // var year = a.getFullYear();
+    // var month = months[a.getMonth()];
+    // var date = a.getDate();
+    // var hour = a.getHours();
+    // var min = a.getMinutes();
+    // var sec = a.getSeconds();
+    // var time =
+    //   date + " " + month + " " + year + " " + hour + ":" + min + "(UTC)";
+    var time = a.toLocaleString("en-US", { timeZoneName: "short" });
     return time;
   }
   showMarketInfoOnHover(marketId) {
@@ -1101,6 +1102,9 @@ export default class App extends PureComponent {
           <br />
           RESOLUTION DETAILS :<br />
           {longDescription}
+          <br />
+          <br />
+          MARKET ID : {markets[marketId].address}
         </Popover.Content>
       </Popover>
     );
