@@ -8,7 +8,7 @@ import Jumbotron from "react-bootstrap/Jumbotron";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
-import Popover from "react-bootstrap/Popover"
+import Popover from "react-bootstrap/Popover";
 
 import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
@@ -206,13 +206,16 @@ export default class App extends PureComponent {
 
       listData.push(
         <tr>
-          <OverlayTrigger placement="right" overlay={this.showMarketInfoOnHover(x)}>      
-          <td
+          <OverlayTrigger
+            placement="right"
+            overlay={this.showMarketInfoOnHover(x)}
+          >
+            <td
             // onMouseEnter={() => this.showMarketInfoOnHover(x, true)}
             // onMouseLeave={() => this.showMarketInfoOnHover(x, false)}
-          >
-            {markets[x].extraInfo.description}
-          </td>
+            >
+              {markets[x].extraInfo.description}
+            </td>
           </OverlayTrigger>
           <td>
             Yes :{" "}
@@ -1089,13 +1092,15 @@ export default class App extends PureComponent {
     let endTimeUnix = markets[marketId].endTime;
     let date = this.timeConverter(endTimeUnix);
 
-    
-      //"Resolution Details: " + longDescription + "\nMarket Ends on: " + date
+    //"Resolution Details: " + longDescription + "\nMarket Ends on: " + date
     return (
-      <Popover  >
-        <Popover.Title as="h3">Info</Popover.Title>
+      <Popover>
+        {/* <Popover.Title as="h3">Info</Popover.Title> */}
         <Popover.Content>
-           Resolution Details:{longDescription} <br/> Market Ends on:{date}
+          MARKET ENDS ON : {date} <br />
+          <br />
+          RESOLUTION DETAILS :<br />
+          {longDescription}
         </Popover.Content>
       </Popover>
     );
