@@ -56,8 +56,7 @@ const getNumTicks = async function (marketAddress) {
   market.options.address = marketAddress;
   return new BN(await market.methods.getNumTicks().call());
 };
-//Deploy 4 markets
-//And Right the info in a file
+///Deploy Augur Foundry
 const ERC20Wrapper = artifacts.require("ERC20Wrapper");
 const AugurFoundry = artifacts.require("AugurFoundry");
 
@@ -79,50 +78,9 @@ module.exports = async function (deployer) {
   let augurFoundry = await AugurFoundry.deployed();
   // console.log(augurFoundry.address);
 
-  //deploy erc20wrappers
-  //get tokenIds for YES/NO outcome for every market
-
   markets[0].augurFoundryAddress = augurFoundry.address;
   // await deployer.deploy(AugurFoundry);
 
-  for (i in markets) {
-    let names = [markets[i].noName, markets[i].yesName];
-    // console.log(names);
-    let symbols = [markets[i].noSymbol, markets[i].yesSymbol];
-    // console.log(symbols);
-    if (!(names[0] && symbols[0])) {
-      //When you are deploying on local
-      names = ["NO", "YES"];
-      symbols = ["NO", "YES"];
-    }
-    let tokenIds = await getYesNoTokenIds(markets[i].address);
-
-    let numTicks = await getNumTicks(markets[i].address);
-    let zeros = new BN(0);
-    while (numTicks.toString() != "1") {
-      numTicks = numTicks.div(new BN(10));
-      zeros = zeros.add(new BN(1));
-    }
-    let decimals = new BN(18).sub(zeros);
-
-    console.log("decimals: " + decimals);
-    // console.log("creating new ERC20s");
-    await augurFoundry.newERC20Wrappers(tokenIds, names, symbols, [
-      decimals,
-      decimals,
-    ]);
-
-    markets[i].noTokenId = tokenIds[0];
-    markets[i].yesTokenId = tokenIds[1];
-    //add these tokenAddresses to the markets json file
-    markets[i].NoTokenAddress = await augurFoundry.wrappers(tokenIds[0]);
-    markets[i].YesTokenAddress = await augurFoundry.wrappers(tokenIds[1]);
-
-    // console.log(await augurFoundry.wrappers(tokenIds[1]));
-  }
-
   await fs.writeFile("./markets/markets-local.json", JSON.stringify(markets));
   //This can be used by the UI
-
-  //we can finalize the markets to test
 };

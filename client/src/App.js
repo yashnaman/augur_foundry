@@ -166,8 +166,9 @@ export default class App extends PureComponent {
     // let yesTokenAddresses = [];
     // let noTokenAddress = [];
     // console.log(markets);
-    this.openNotification("info", "Updating Markets...", "");
+    this.openNotification("info", "Updating Markets...", "", 5);
     for (let x = 0; x < markets.length; x++) {
+      // let x = 0;
       let wrappedBalances = await this.getYesNoBalancesMarketERC20(
         markets[x].address
       );
@@ -202,7 +203,12 @@ export default class App extends PureComponent {
 
       listData.push(
         <tr>
-          <td>{markets[x].extraInfo.description}</td>
+          <td
+            onMouseEnter={() => this.showMarketInfoOnHover(x, true)}
+            onMouseLeave={() => this.showMarketInfoOnHover(x, false)}
+          >
+            {markets[x].extraInfo.description}
+          </td>
           <td>
             Yes :{" "}
             {web3.utils
@@ -318,6 +324,7 @@ export default class App extends PureComponent {
     //console.log(listData)
     this.setState({ listData: listData });
   }
+
   async addTokenToMetamask(tokenAddress, index, outcome) {
     const { erc20 } = this.state;
     erc20.options.address = tokenAddress;
@@ -1032,14 +1039,55 @@ export default class App extends PureComponent {
     }
   }
 
-  openNotification = (type, title, description) => {
+  openNotification = (type, title, description, duration) => {
+    if (duration == undefined) {
+      duration = 15;
+    } else {
+      duration = duration;
+    }
     // const { notification } = antd;
     notification[type]({
       message: title,
-      duration: 15,
+      duration: duration,
       description: description,
     });
   };
+  timeConverter(UNIX_timestamp) {
+    var a = new Date(UNIX_timestamp * 1000);
+    var months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    var year = a.getFullYear();
+    var month = months[a.getMonth()];
+    var date = a.getDate();
+    var hour = a.getHours();
+    var min = a.getMinutes();
+    var sec = a.getSeconds();
+    var time =
+      date + " " + month + " " + year + " " + hour + ":" + min + "(UTC)";
+    return time;
+  }
+  showMarketInfoOnHover(marketId, isShowing) {
+    // let desciption = markets[marketId].desciption;
+    let longDescription = markets[marketId].extraInfo.longDescription;
+    let endTimeUnix = markets[marketId].endTime;
+    let date = this.timeConverter(endTimeUnix);
+
+    alert(
+      "Resolution Details: " + longDescription + "\nMarket Ends on: " + date
+    );
+  }
   render() {
     return (
       <Container className="p-3 mainContainer">

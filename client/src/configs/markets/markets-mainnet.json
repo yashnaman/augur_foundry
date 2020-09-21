@@ -5,7 +5,7 @@
     "extraInfo": {
       "categories": ["Sports", "American Football", "NFL"],
       "description": "NFL Week 1: Will the Denver Broncos win vs. the Tennessee Titans?",
-      "longDescription": "Include Regulation and Overtime\\nIf the game ends in a tie, the market should resolve as 'No' as Team A did NOT win vs. team B\\nAt least 55 minutes of play must have elapsed for the game to be deemed official. If less than 55 minutes of play have been completed, there is no official winner of the game and the market should resolve as 'No'\\nIf the game is not played market should resolve as 'No'."
+      "longDescription": "Include Regulation and Overtime.\nIf the game ends in a tie, the market should resolve as 'No' as Team A did NOT win vs. team B.\nAt least 55 minutes of play must have elapsed for the game to be deemed official. If less than 55 minutes of play have been completed, there is no official winner of the game and the market should resolve as 'No'.\nIf the game is not played market should resolve as 'No'."
     },
     "YesTokenAddress": "0xCF4dA408ABb662E7525e8f3B5d69791c895d99E6",
     "NoTokenAddress": "0x840cD02B34907fE2Dc3cFc653E8111E273F90469",
@@ -14,6 +14,24 @@
     "yesName": "YES Denver Broncos",
     "noName": "NO Denver Broncos",
     "yesSymbol": "yesDB",
-    "noSymbol": "noDB"
+    "noSymbol": "noDB",
+    "endTime": "1600055612"
+  },
+  {
+    "address": "0x1EBb89156091EB0d59603C18379C03A5c84D7355",
+    "extraInfo": {
+      "categories": ["Politics", "US Politics", "President"],
+      "description": "Will Donald Trump win the 2020 U.S. Presidential election?",
+      "longDescription": "A candidate that receives at least 270 votes in the Electoral College shall be considered the winner. In the event that no candidate receives 270 votes, the House of Representatives will decide the winner. In the event of further indecision or tie, it will be the candidate determined to be the winner under the US Constitution.\nThis market is intended to be about a Single Candidate, if this is not the case, this market should settle as 'Invalid'."
+    },
+    "YesTokenAddress": "0x3af375d9f77Ddd4F16F86A5D51a9386b7B4493Fa",
+    "NoTokenAddress": "0x44Ea84a85616F8e9cD719Fc843DE31D852ad7240",
+    "yesTokenId": "13900731974189947092852713860171722817829981826178629116981917578996173766656",
+    "noTokenId": "13900731974189947092852713860171722817829981826178319631972096233927448985600",
+    "yesName": "YES Donald Trump",
+    "noName": "NO Donald Trump",
+    "yesSymbol": "yTrump",
+    "noSymbol": "nTrump",
+    "endTime": "1611273600"
   }
 ]

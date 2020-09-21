@@ -10,7 +10,8 @@
     "YesTokenAddress": "0x1dbCcF29375304c38bd0d162f636BAA8Dd6CcE44",
     "NoTokenAddress": "0xeb69840f09A9235df82d9Ed9D43CafFFea2a1eE9",
     "yesTokenId": "35241945164985940831766909683914416240183070374501935269751242061395229933568",
-    "noTokenId": "35241945164985940831766909683914416240183070374501625784741420716326505152512"
+    "noTokenId": "35241945164985940831766909683914416240183070374501625784741420716326505152512",
+    "endTime": "1606694400"
   },
   {
     "address": "0xD3Ba2A2E641F61a5Bcb7a772C49BA6b78E1416e0",
@@ -22,34 +23,33 @@
     "YesTokenAddress": "0xaC9C1c55901c51b4ff78d957e66bbFE35580528B",
     "NoTokenAddress": "0xF7EF92d2a34137dfa2d60A983eb68dbF0ec3db07",
     "yesTokenId": "95766935729166238065196768581699002861544481200992187110404344209341667082240",
-    "noTokenId": "95766935729166238065196768581699002861544481200991877625394522864272942301184"
+    "noTokenId": "95766935729166238065196768581699002861544481200991877625394522864272942301184",
+    "endTime": "1605312000"
   },
   {
     "address": "0x434680cE3943A76A276c7bF329F74F4f9B9Cc41d",
     "extraInfo": {
-      "categories": ["common", "yesNo 1 secondary", "yesNo 1 tertiary"],
+      "categories": ["Medical", "Covid-19", ""],
       "description": "Will the FDA approve a vaccine for Coronavirus (Covid-19) by October 31, 2020?",
-      "longDescription": "yesNo longDescription 1"
+      "longDescription": ""
     },
     "YesTokenAddress": "0x8dE96848E9F4904C7Fe89A3d4C5D5434e997E118",
     "NoTokenAddress": "0xb465BB3e5F078678Ca3e342abdc5730DBc1996Df",
     "yesTokenId": "30429529132925369400715871890850819209840489584523578876250179417247685017600",
-    "noTokenId": "30429529132925369400715871890850819209840489584523269391240358072178960236544"
+    "noTokenId": "30429529132925369400715871890850819209840489584523269391240358072178960236544",
+    "endTime": "1604275200"
   },
   {
     "address": "0x4c84e8631824ea85dfa89461d41802cd64d6f237",
     "extraInfo": {
-      "categories": [
-        "yesNo 2 primary",
-        "yesNo 2 secondary",
-        "yesNo 2 tertiary"
-      ],
-      "description": "Will the price of ETH/USD open at or above 800 on September 30, 2020, according to TradingView.com?",
-      "longDescription": "yesNo longDescription 2"
+      "categories": ["Crypto", "Ethereum", "ETHUSD (crypto - Bitfinex)"],
+      "description": "Will the price of ETH/USD open at or above 800 on September 30, 2020, according to TradingView.com \\\"ETHUSD (crypto - Bitfinex)",
+      "longDescription": "Use ticker symbol search for token pair (ie ETHUSD), find exchange that corresponds to market question. Navigate to Full-featured daily chart, Opening price is determined on the date in the market question on tradingview.com.\\nOpening price can also be found on tradingview using the hourly chart for the date in the market question at UTC (0) 00:00\\nIf the trading pair market isn't available on tradingview.com, refer to the actual exchange. For example, if Coinbase's tradingview.com data feed is unavailable, find the opening price on Coinbase's exchange by using the hourly candlestick chart adjusting for local timezone offset. In order to find equivalent 00:00 UTC-0 hourly candlestick for December 16th, go to hourly candelstick for 00:00 December 16th, then count backwards or forwards the number of candlesticks depending on local time zone offset. If local timezone offset is UTC -5 move back 5 candlesticks to find the Open Price for 19:00 December 15th hourly candlestick."
     },
     "YesTokenAddress": "0x0A86a06251489cbabd3DB27dF536da11BbeAc44B",
     "NoTokenAddress": "0x40c3d156996BC21b190E96f6B8609297F4A21221",
     "yesTokenId": "34610604181608849111491897534568394368616475032064379798973974411408675176448",
-    "noTokenId": "34610604181608849111491897534568394368616475032064070313964153066339950395392"
+    "noTokenId": "34610604181608849111491897534568394368616475032064070313964153066339950395392",
+    "endTime": "1601510400"
   }
 ]
