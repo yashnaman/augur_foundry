@@ -249,16 +249,16 @@ export default class App extends PureComponent {
             </td>
           </OverlayTrigger>
           <td>
-            Yes :{" "}
+            Yes:{" "}
             {web3.utils
               .fromWei(shareTokenBalances.yesTokenBalance.toString())
               .toString()}
             <br />
-            No :{" "}
+            No:{" "}
             {web3.utils.fromWei(shareTokenBalances.noTokenBalance).toString()}
           </td>
           <td>
-            Yes :{" "}
+            Yes:{" "}
             {web3.utils.fromWei(wrappedBalances.yesTokenBalance).toString()} (
             <span
               style={{ color: "#ffd790", cursor: "pointer" }}
@@ -270,7 +270,7 @@ export default class App extends PureComponent {
             </span>
             )
             <br />
-            No : {web3.utils
+            No: {web3.utils
               .fromWei(wrappedBalances.noTokenBalance)
               .toString()}{" "}
             (
@@ -1146,9 +1146,8 @@ export default class App extends PureComponent {
         <Jumbotron>
           <Jumbotron className="topcorner oi-display">
             <h5>
-              <span style={{ color: "#FFFFFF" }}>
-                Foundry TVL:
-                <br />
+              <span className="foundry-tvl" style={{ color: "#FFFFFF" }}>
+                Foundry TVL: {" "}
                 <NumberFormat
                   value={this.state.foundryTVL}
                   displayType={"text"}
@@ -1156,10 +1155,8 @@ export default class App extends PureComponent {
                   prefix={"$"}
                 />
               </span>
-              <br />
-              <span style={{ color: "#FFFFFF" }}>
-                % of Total Augur OI:
-                <br />
+              <span className="foundry-percent" style={{ color: "#FFFFFF" }}>
+                Portion of Net Augur OI:{" "}
                 {this.state.foundryPecentage}%
               </span>
             </h5>

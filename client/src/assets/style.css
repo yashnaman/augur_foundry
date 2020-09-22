@@ -12,7 +12,7 @@ body {
   padding-top: 38px;
 }
 .m-left {
-  margin: 10px;
+  margin: 10px 10px 10px 0;
 }
 .dropdownMarket {
   border-radius: 0;
@@ -44,9 +44,6 @@ body {
   color: white;
 }
 
-.m-left {
-  margin-left: 10px;
-}
 .table-hover tbody tr:hover {
   color: #fff !important;
 }
@@ -60,8 +57,8 @@ body {
 }
 
 .col-4 {
-  flex: 0 0 40.333333%;
-  max-width: 40.333333%;
+  flex: 0 0 43.333333%;
+  max-width: 43.333333%;
   font-size: 93%;
 }
 
@@ -149,9 +146,9 @@ td {
 }
 
 .oi-display {
-  margin: 1.73em;
-  padding-right: 5em;
-  color: #dedede;
+    padding-right: 6.7em;
+    color: #dedede;
+    margin-top: 1.82em;
 }
 
 .popover {
@@ -171,4 +168,16 @@ td {
   -webkit-background-clip: padding-box;
      -moz-background-clip: padding;
           background-clip: padding-box;
+}
+
+.foundry-tvl {
+  font-weight:normal;
+  display: block;
+  margin-bottom: 5px;
+  font-size: 95%;
+}
+
+.foundry-percent {
+  font-weight: normal;
+  font-size: 95%;
 }
