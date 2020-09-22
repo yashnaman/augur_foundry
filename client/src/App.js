@@ -136,12 +136,41 @@ export default class App extends PureComponent {
     const erc20Wrapper = new web3.eth.Contract(
       contracts.contracts["ERC20Wrapper.sol"].ERC20Wrapper.abi
     );
-    let totalOIEth = web3.utils.fromWei(
+    let totalOIWei = new BN(
       await universe.methods.getOpenInterestInAttoCash().call()
     );
-    let n = totalOIEth.indexOf(".");
+
+    // let totalOIEth = web3.utils.fromWei(totalOIWei);
+    // //This is a hack for precision when dealing with bignumber
+    // let n = totalOIEth.indexOf(".");
+    // let totalOI = totalOIEth.substring(0, n != -1 ? n + 3 : totalOIEth.length);
+    console.log(web3.utils.fromWei(totalOIWei).toString());
+    let foundryTVLWei = new BN(0);
+    for (let i = 0; i < markets.length; i++) {
+      market.options.address = markets[i].address;
+      foundryTVLWei = foundryTVLWei.add(
+        new BN(await market.methods.getOpenInterest().call())
+      );
+    }
+    let foundryTVLEth = web3.utils.fromWei(foundryTVLWei);
     //This is a hack for precision when dealing with bignumber
-    let totalOI = totalOIEth.substring(0, n != -1 ? n + 3 : totalOIEth.length);
+    let n = foundryTVLEth.indexOf(".");
+    let foundryTVL = foundryTVLEth.substring(
+      0,
+      n != -1 ? n + 3 : foundryTVLEth.length
+    );
+    let foundryPecentageWei = foundryTVLWei
+      .mul(new BN(10).pow(new BN(20)))
+      .div(totalOIWei);
+
+    let foundryPecentageEth = web3.utils.fromWei(foundryPecentageWei);
+    //This is a hack for precision when dealing with bignumber
+    n = foundryPecentageEth.indexOf(".");
+    let foundryPecentage = foundryPecentageEth.substring(
+      0,
+      n != -1 ? n + 3 : foundryPecentageEth.length
+    );
+
     this.setState(
       {
         cash: cash,
@@ -153,7 +182,9 @@ export default class App extends PureComponent {
         erc20: erc20,
         erc20Wrapper: erc20Wrapper,
         OUTCOMES: OUTCOMES,
-        totalOI: totalOI,
+        // totalOI: totalOI,
+        foundryTVL: foundryTVL,
+        foundryPecentage: foundryPecentage.toString(),
       },
       () => {
         this.invetoryInit();
@@ -1116,14 +1147,20 @@ export default class App extends PureComponent {
           <Jumbotron className="topcorner oi-display">
             <h5>
               <span style={{ color: "#FFFFFF" }}>
-                Total Open Interest
+                Foundry TVL:
                 <br />
                 <NumberFormat
-                  value={this.state.totalOI}
+                  value={this.state.foundryTVL}
                   displayType={"text"}
                   thousandSeparator={true}
                   prefix={"$"}
                 />
+              </span>
+              <br />
+              <span style={{ color: "#FFFFFF" }}>
+                % of Total Augur OI:
+                <br />
+                {this.state.foundryPecentage}%
               </span>
             </h5>
           </Jumbotron>
