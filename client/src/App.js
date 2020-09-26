@@ -367,16 +367,18 @@ export default class App extends PureComponent {
   async addTokenToMetamask(tokenAddress, index, outcome) {
     const { erc20 } = this.state;
     erc20.options.address = tokenAddress;
+
     let tokenSymbol = await erc20.methods.symbol().call();
-    // let tokenSymbol;
+
     let decimals = await erc20.methods.decimals().call();
-    // if (outcome == 1) {
-    //   tokenSymbol = "NO" + (index + 1);
-    // } else if (outcome == 2) {
-    //   tokenSymbol = "YES" + (index + 1);
-    // } else {
-    //   throw new Error("Not a valid outcome");
-    // }
+    let tokenImage;
+    if (outcome == 1) {
+      tokenImage = markets[index].noIcon;
+    } else if (outcome == 2) {
+      tokenImage = markets[index].yesIcon;
+    } else {
+      throw new Error("Not a valid outcome");
+    }
     const provider = window.web3.currentProvider;
     provider.sendAsync(
       {
@@ -387,7 +389,7 @@ export default class App extends PureComponent {
             address: tokenAddress,
             symbol: tokenSymbol,
             decimals: decimals,
-            // image: tokenImage,
+            image: tokenImage,
           },
         },
         id: Math.round(Math.random() * 100000),
@@ -1147,7 +1149,7 @@ export default class App extends PureComponent {
           <Jumbotron className="topcorner oi-display">
             <h5>
               <span className="foundry-tvl" style={{ color: "#FFFFFF" }}>
-                Foundry TVL: {" "}
+                Foundry TVL:{" "}
                 <NumberFormat
                   value={this.state.foundryTVL}
                   displayType={"text"}
@@ -1156,8 +1158,7 @@ export default class App extends PureComponent {
                 />
               </span>
               <span className="foundry-percent" style={{ color: "#FFFFFF" }}>
-                Portion of Net Augur OI:{" "}
-                {this.state.foundryPecentage}%
+                Portion of Net Augur OI: {this.state.foundryPecentage}%
               </span>
             </h5>
           </Jumbotron>
