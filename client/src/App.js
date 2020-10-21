@@ -1210,14 +1210,13 @@ export default class App extends PureComponent {
             </Col>
           </Row>
 
-          <h3 className="header inventory-header">MY INVENTORY</h3>
           <Table striped bordered hover>
             <thead>
               <tr>
                 <th className="market-column">Market</th>
-                <th className="holdings-column">Holdings ERC1155</th>
-                <th className="holdings-column">Holdings ERC20</th>
-                <th>Convert Shares</th>
+                <th className="holdings-column">My Shares <span class="faded">(ERC1155)</span></th>
+                <th className="holdings-column">My Tokens <span class="faded">(ERC20)</span></th>
+                <th>Convert / Redeem</th>
               </tr>
             </thead>
             <tbody>
@@ -1228,6 +1227,16 @@ export default class App extends PureComponent {
               )}
             </tbody>
           </Table>
+          <div className="misc-links">
+           <ul class="link-list">
+             <li> <a href="https://medium.com/sunrise-over-the-merkle-trees/how-to-use-augur-foundry-315f408c0d57" target="_blank">
+<span class="link_emoji">&#128129;</span>Tutorial</a></li>
+             <li> <a href="https://pools.balancer.exchange/#/pool/0x6b74fb4e4b3b177b8e95ba9fa4c3a3121d22fbfb/" target="_blank"><span class="link_emoji">&#128167;</span>Balancer Pool</a></li>
+             <li> <a href="https://catnip.exchange/" target="_blank"><span class="link_emoji">&#128049;</span>catnip exchange</a></li>
+             <li> <a href="https://github.com/aug-dao/augur_foundry" target="_blank"><span class="link_emoji"> &#128187;</span>Codebase</a></li>
+
+           </ul>
+          </div>
         </Jumbotron>
       </Container>
     );

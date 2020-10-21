@@ -181,3 +181,50 @@ td {
   font-weight: normal;
   font-size: 95%;
 }
+
+.misc-links h4 {
+    color: #eee;
+    font-size: 1.44em !important;
+    margin-top: 40px;
+    font-weight: normal;
+}
+
+.link-list {
+  padding: 0;
+  background-color: #171717 !important;
+  margin-top: 35px;
+  list-style-type: none;
+  height: 200px;
+}
+
+.link-list li {
+  font-size: 21px;
+  text-align: center;
+  width: 25%;
+  float: left;
+  height: 100%;
+  padding: 0;
+  text-align: 0;
+  border: 1px solid #525252;
+}
+
+.link-list li:hover {
+  background: #222;
+}
+
+.link-list a {
+  padding-top: 80px;
+  color: #eee;
+  height: 100%;
+  display: block;
+  text-decoration: none;
+}
+
+.link_emoji {
+  margin-right: 10px;
+}
+
+.faded {
+  font-weight: normal;
+  font-size: 84%;
+}
