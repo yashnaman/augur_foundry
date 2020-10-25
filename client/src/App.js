@@ -9,14 +9,15 @@ import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Popover from "react-bootstrap/Popover";
+import { Modal } from "react-bootstrap";
 
 import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
 import NumberFormat from "react-number-format";
 
-import markets from "./configs/markets/markets-mainnet.json";
+import markets from "./configs/markets/markets-kovan.json";
 import contracts from "./configs/contracts.json";
-import environment from "./configs/environments/environment-mainnet.json";
+import environment from "./configs/environments/environment-kovan.json";
 
 import { notification } from "antd";
 import "antd/dist/antd.css";
@@ -31,6 +32,7 @@ export default class App extends PureComponent {
         isLogin: false,
         netWorkId: 0,
         accounts: [],
+        show: true,
       },
       listData: null,
     };
@@ -91,14 +93,14 @@ export default class App extends PureComponent {
     let chainId = await web3.eth.net.getId();
     console.log("chainId: " + chainId);
 
-    if (chainId != 1) {
-      this.openNotification(
-        "error",
-        "Wrong Network",
-        "Please connect to Ethereum Mainnet"
-      );
-      return;
-    }
+    // if (chainId != 1) {
+    //   this.openNotification(
+    //     "error",
+    //     "Wrong Network",
+    //     "Please connect to Ethereum Mainnet"
+    //   );
+    //   return;
+    // }
 
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
 
@@ -192,36 +194,57 @@ export default class App extends PureComponent {
     );
     // notification.destroy();
   }
+  showModal = () => {
+    this.setState({ show: true });
+  };
 
+  hideModal = () => {
+    this.setState({ show: false });
+  };
   async invetoryInit() {
     const { web3 } = this.state.web3Provider;
-    const { OUTCOMES, erc20 } = this.state;
+    const { OUTCOMES, erc20, show } = this.state;
     let listData = [];
     // let yesTokenAddresses = [];
     // let noTokenAddress = [];
     // console.log(markets);
     this.openNotification("info", "Updating Markets...", "", 5);
-    for (let x = 0; x < markets.length; x++) {
+    // for (let x = 0; x < markets.length; x++) {
+    for (let x = 0; x < 1; x++) {
       // let x = 0;
-      let wrappedBalances = await this.getYesNoBalancesMarketERC20(
+      let wrappedBalances = await this.getBalancesMarketERC20(
         markets[x].address
       );
       let {
+        invalidTokenAddress,
         yesTokenAddress,
         noTokenAddress,
-      } = await this.getYesNoTokenAddresses(markets[x].address);
+      } = await this.getTokenAddresses(markets[x].address);
 
       let decimals = new BN(15);
-
+      wrappedBalances.invalidTokenBalance = wrappedBalances.invalidTokenBalance.mul(
+        new BN(10).pow(new BN(2))
+      );
       wrappedBalances.yesTokenBalance = wrappedBalances.yesTokenBalance.mul(
-        new BN(10).pow(new BN(3))
+        new BN(10).pow(new BN(2))
       );
       wrappedBalances.noTokenBalance = wrappedBalances.noTokenBalance.mul(
-        new BN(10).pow(new BN(3))
+        new BN(10).pow(new BN(2))
       );
+
+      // let decimals = new BN(15);
+      // wrappedBalances.invalidTokenBalance = wrappedBalances.invalidTokenBalance.mul(
+      //   new BN(10).pow(new BN(3))
+      // );
+      // wrappedBalances.yesTokenBalance = wrappedBalances.yesTokenBalance.mul(
+      //   new BN(10).pow(new BN(3))
+      // );
+      // wrappedBalances.noTokenBalance = wrappedBalances.noTokenBalance.mul(
+      //   new BN(10).pow(new BN(3))
+      // );
       // console.log(noTokenAddres);
       // console.log(yesTokenAddress);
-      let shareTokenBalances = await this.getYesNoBalancesMarketShareToken(
+      let shareTokenBalances = await this.getBalancesMarketShareToken(
         markets[x].address
       );
       let isMoreThanZeroShares = await this.checkIfMoreThanZeroShares(
@@ -256,6 +279,11 @@ export default class App extends PureComponent {
             <br />
             No:{" "}
             {web3.utils.fromWei(shareTokenBalances.noTokenBalance).toString()}
+            <br />
+            Invalid:{" "}
+            {web3.utils
+              .fromWei(shareTokenBalances.invalidTokenBalance)
+              .toString()}
           </td>
           <td>
             Yes:{" "}
@@ -278,6 +306,21 @@ export default class App extends PureComponent {
               style={{ color: "#ffd790", cursor: "pointer" }}
               onClick={async (event) =>
                 this.addTokenToMetamask(noTokenAddress, x, OUTCOMES.NO)
+              }
+            >
+              Show in wallet
+            </span>
+            )
+            <br />
+            Invalid:{" "}
+            {web3.utils
+              .fromWei(wrappedBalances.invalidTokenBalance)
+              .toString()}{" "}
+            (
+            <span
+              style={{ color: "#ffd790", cursor: "pointer" }}
+              onClick={async (event) =>
+                this.addTokenToMetamask(invalidTokenAddress, x, OUTCOMES.NO)
               }
             >
               Show in wallet
@@ -569,22 +612,27 @@ export default class App extends PureComponent {
         .call();
 
       let tokenIds = [];
-      tokenIds.push(
-        await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
-      );
-      tokenIds.push(
-        await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
-      );
+      let amounts = [];
+      // const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
+      for (let i = 0; i < 3; i++) {
+        let shareTokenId = await shareToken.methods
+          .getTokenId(marketAddress, i)
+          .call();
+        let shareBalance = new BN(
+          await shareToken.methods.balanceOf(accounts[0], shareTokenId).call()
+        );
+        if (!shareBalance.isZero()) {
+          tokenIds.push(shareTokenId);
+          amounts.push(shareBalance.toString());
+        }
+      }
+      console.log("amounts", amounts);
+
       // console.log(tokenIds);
       // console.log(markets[0].YesTokenAddress);
 
       //get the balance of both tokenIds and give the amoun on which is less
-      let yesShareBalance = new BN(
-        await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
-      );
-      let noShareBalance = new BN(
-        await shareToken.methods.balanceOf(accounts[0], tokenIds[0]).call()
-      );
+
       // console.log(yesShareBalance);
       //wrap whatever the balance is
 
@@ -597,7 +645,7 @@ export default class App extends PureComponent {
           "Approve your share tokens to be able to wrap shares",
           ""
         );
-        shareToken.methods
+        await shareToken.methods
           .setApprovalForAll(augurFoundry.options.address, true)
           .send({ from: accounts[0] })
           .on("receipt", (receipt) => {
@@ -606,63 +654,6 @@ export default class App extends PureComponent {
               "Approval successful",
               "Now we can wrap shares"
             );
-            // this.initData();
-            this.openNotification("info", "Wrapping your shares", "");
-            augurFoundry.methods
-              .wrapMultipleTokens(tokenIds, accounts[0], [
-                noShareBalance.toString(),
-                yesShareBalance.toString(),
-              ])
-              .send({ from: accounts[0] })
-              .on("receipt", (receipt) => {
-                this.openNotification("success", "Wrapping successful", "");
-                this.initData();
-              })
-              .on("error", (error) => {
-                if (
-                  error.message.includes("User denied transaction signature")
-                ) {
-                  this.openNotification(
-                    "error",
-                    "User denied signature",
-                    "sign the transaction to be able to execute the transaction"
-                  );
-                } else {
-                  this.openNotification(
-                    "error",
-                    "There was an error in executing the transaction",
-                    ""
-                  );
-                }
-              });
-          })
-          .on("error", (error) => {
-            if (error.message.includes("User denied transaction signature")) {
-              this.openNotification(
-                "error",
-                "User denied signature",
-                "sign the transaction to be able to execute the transaction"
-              );
-            } else {
-              this.openNotification(
-                "error",
-                "There was an error in executing the transaction",
-                ""
-              );
-            }
-          });
-      } else {
-        this.openNotification("info", "Wrapping your shares", "");
-        //wrapp all the tokens
-        augurFoundry.methods
-          .wrapMultipleTokens(tokenIds, accounts[0], [
-            noShareBalance.toString(),
-            yesShareBalance.toString(),
-          ])
-          .send({ from: accounts[0] })
-          .on("receipt", (receipt) => {
-            this.openNotification("success", "Wrapping successful", "");
-            this.initData();
           })
           .on("error", (error) => {
             if (error.message.includes("User denied transaction signature")) {
@@ -680,6 +671,31 @@ export default class App extends PureComponent {
             }
           });
       }
+      this.openNotification("info", "Wrapping your shares", "");
+
+      //wrapp all the tokens
+      augurFoundry.methods
+        .wrapMultipleTokens(tokenIds, accounts[0], amounts)
+        .send({ from: accounts[0] })
+        .on("receipt", (receipt) => {
+          this.openNotification("success", "Wrapping successful", "");
+          this.initData();
+        })
+        .on("error", (error) => {
+          if (error.message.includes("User denied transaction signature")) {
+            this.openNotification(
+              "error",
+              "User denied signature",
+              "sign the transaction to be able to execute the transaction"
+            );
+          } else {
+            this.openNotification(
+              "error",
+              "There was an error in executing the transaction",
+              ""
+            );
+          }
+        });
     }
     // await this.initData();
   }
@@ -923,26 +939,42 @@ export default class App extends PureComponent {
     const { augurFoundry, shareToken, OUTCOMES } = this.state;
     if (marketAddress) {
       const {
+        invalidTokenBalance,
         yesTokenBalance,
         noTokenBalance,
-      } = await this.getYesNoBalancesMarketERC20(marketAddress);
-      //this should be a function
+      } = await this.getBalancesMarketERC20(marketAddress);
+
+      let amounts = [];
       let tokenIds = [];
-      tokenIds.push(
-        await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
-      );
-      tokenIds.push(
-        await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
-      );
+      if (!invalidTokenBalance.isZero()) {
+        tokenIds.push(
+          await shareToken.methods
+            .getTokenId(marketAddress, OUTCOMES.INVALID)
+            .call()
+        );
+        amounts.push(invalidTokenBalance.toString());
+      }
+      if (!yesTokenBalance.isZero()) {
+        tokenIds.push(
+          await shareToken.methods
+            .getTokenId(marketAddress, OUTCOMES.YES)
+            .call()
+        );
+        amounts.push(yesTokenBalance.toString());
+      }
+      if (!noTokenBalance.isZero()) {
+        tokenIds.push(
+          await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
+        );
+        amounts.push(noTokenBalance.toString());
+      }
+      console.log("amounts", amounts);
 
       // let amount =
       //   yesTokenBalance > noTokenBalance ? noTokenBalance : yesTokenBalance;
       this.openNotification("info", "Unwrapping shares", "");
       augurFoundry.methods
-        .unWrapMultipleTokens(tokenIds, [
-          noTokenBalance.toString(),
-          yesTokenBalance.toString(),
-        ])
+        .unWrapMultipleTokens(tokenIds, amounts)
         .send({ from: accounts[0] })
         .on("receipt", (receipt) => {
           this.openNotification("success", "Shares unwrapped successfully", "");
@@ -967,21 +999,27 @@ export default class App extends PureComponent {
     // await this.initData();
   }
 
-  async getYesNoBalancesMarketERC20(marketAddress) {
+  async getBalancesMarketERC20(marketAddress) {
     const { accounts } = this.state.web3Provider;
     const { shareToken, augurFoundry, erc20, OUTCOMES } = this.state;
+    let invalidTokenBalance = new BN(0);
     let yesTokenBalance = new BN(0);
     let noTokenBalance = new BN(0);
+
     if (accounts[0]) {
       let {
+        invalidTokenAddress,
         yesTokenAddress,
         noTokenAddress,
-      } = await this.getYesNoTokenAddresses(marketAddress);
+      } = await this.getTokenAddresses(marketAddress);
       // console.log("yesTOkenAddress" + yesTokenAddress);
       // console.log("accounts{0}" + accounts[0]);
       // console.log(noTokenAddress);
       // console.log(yesTokenAddress);
-
+      invalidTokenBalance = await this.getBalanceOfERC20(
+        invalidTokenAddress,
+        accounts[0]
+      );
       yesTokenBalance = await this.getBalanceOfERC20(
         yesTokenAddress,
         accounts[0]
@@ -994,12 +1032,17 @@ export default class App extends PureComponent {
     return {
       yesTokenBalance: yesTokenBalance,
       noTokenBalance: noTokenBalance,
+      invalidTokenBalance: invalidTokenBalance,
     };
   }
-  async getYesNoTokenAddresses(marketAddress) {
+  async getTokenAddresses(marketAddress) {
     const { shareToken, augurFoundry, OUTCOMES } = this.state;
     let tokenIds = [];
-
+    tokenIds.push(
+      await shareToken.methods
+        .getTokenId(marketAddress, OUTCOMES.INVALID)
+        .call()
+    );
     tokenIds.push(
       await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
     );
@@ -1007,26 +1050,40 @@ export default class App extends PureComponent {
     tokenIds.push(
       await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
     );
-    let yesTokenAddress = await augurFoundry.methods
-      .wrappers(tokenIds[1])
-      .call();
-    let noTokenAddress = await augurFoundry.methods
+    let invalidTokenAddress = await augurFoundry.methods
       .wrappers(tokenIds[0])
       .call();
-    return { yesTokenAddress: yesTokenAddress, noTokenAddress: noTokenAddress };
+    let noTokenAddress = await augurFoundry.methods
+      .wrappers(tokenIds[1])
+      .call();
+    let yesTokenAddress = await augurFoundry.methods
+      .wrappers(tokenIds[2])
+      .call();
+
+    return {
+      yesTokenAddress: yesTokenAddress,
+      noTokenAddress: noTokenAddress,
+      invalidTokenAddress: invalidTokenAddress,
+    };
   }
-  async getYesNoBalancesMarketShareToken(marketAddress) {
+  async getBalancesMarketShareToken(marketAddress) {
     const { accounts, web3 } = this.state.web3Provider;
     const { shareToken, augurFoundry, market, erc20, OUTCOMES } = this.state;
 
     market.options.address = marketAddress;
     let numTicks = new BN(await market.methods.getNumTicks().call());
 
+    let invalidTokenBalanceWithNumTicks = new BN(0);
     let yesTokenBalanceWithNumTicks = new BN(0);
     let noTokenBalanceWithNumTicks = new BN(0);
+
     if (accounts[0]) {
       let tokenIds = [];
-
+      tokenIds.push(
+        await shareToken.methods
+          .getTokenId(marketAddress, OUTCOMES.INVALID)
+          .call()
+      );
       tokenIds.push(
         await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
       );
@@ -1035,17 +1092,21 @@ export default class App extends PureComponent {
         await shareToken.methods.getTokenId(marketAddress, OUTCOMES.YES).call()
       );
 
-      let yesTokenBalance = new BN(
-        await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
-      );
-      let noTokenBalance = new BN(
+      let invalidTokenBalance = new BN(
         await shareToken.methods.balanceOf(accounts[0], tokenIds[0]).call()
       );
-
+      let yesTokenBalance = new BN(
+        await shareToken.methods.balanceOf(accounts[0], tokenIds[2]).call()
+      );
+      let noTokenBalance = new BN(
+        await shareToken.methods.balanceOf(accounts[0], tokenIds[1]).call()
+      );
+      invalidTokenBalanceWithNumTicks = invalidTokenBalance.mul(numTicks);
       yesTokenBalanceWithNumTicks = yesTokenBalance.mul(numTicks);
       noTokenBalanceWithNumTicks = noTokenBalance.mul(numTicks);
     }
     return {
+      invalidTokenBalance: invalidTokenBalanceWithNumTicks,
       yesTokenBalance: yesTokenBalanceWithNumTicks,
       noTokenBalance: noTokenBalanceWithNumTicks,
     };
@@ -1060,7 +1121,8 @@ export default class App extends PureComponent {
 
     if (
       wrappedBalances.yesTokenBalance.cmp(new BN(0)) == 0 &&
-      wrappedBalances.noTokenBalance.cmp(new BN(0)) == 0
+      wrappedBalances.noTokenBalance.cmp(new BN(0)) == 0 &&
+      wrappedBalances.invalidTokenBalance.cmp(new BN(0)) == 0
     )
       return false;
     else {
@@ -1070,7 +1132,8 @@ export default class App extends PureComponent {
   async checkIfMoreThanZeroShares(shareTokenBalances) {
     if (
       shareTokenBalances.yesTokenBalance.cmp(new BN(0)) == 0 &&
-      shareTokenBalances.noTokenBalance.cmp(new BN(0)) == 0
+      shareTokenBalances.noTokenBalance.cmp(new BN(0)) == 0 &&
+      shareTokenBalances.invalidTokenBalance.cmp(new BN(0)) == 0
     ) {
       // console.log(false);
       return false;
@@ -1095,28 +1158,6 @@ export default class App extends PureComponent {
   };
   timeConverter(UNIX_timestamp) {
     var a = new Date(UNIX_timestamp * 1000);
-    // var months = [
-    //   "Jan",
-    //   "Feb",
-    //   "Mar",
-    //   "Apr",
-    //   "May",
-    //   "Jun",
-    //   "Jul",
-    //   "Aug",
-    //   "Sep",
-    //   "Oct",
-    //   "Nov",
-    //   "Dec",
-    // ];
-    // var year = a.getFullYear();
-    // var month = months[a.getMonth()];
-    // var date = a.getDate();
-    // var hour = a.getHours();
-    // var min = a.getMinutes();
-    // var sec = a.getSeconds();
-    // var time =
-    //   date + " " + month + " " + year + " " + hour + ":" + min + "(UTC)";
     var time = a.toLocaleString("en-US", { timeZoneName: "short" });
     return time;
   }
@@ -1214,8 +1255,12 @@ export default class App extends PureComponent {
             <thead>
               <tr>
                 <th className="market-column">Market</th>
-                <th className="holdings-column">My Shares <span class="faded">(ERC1155)</span></th>
-                <th className="holdings-column">My Tokens <span class="faded">(ERC20)</span></th>
+                <th className="holdings-column">
+                  My Shares <span class="faded">(ERC1155)</span>
+                </th>
+                <th className="holdings-column">
+                  My Tokens <span class="faded">(ERC20)</span>
+                </th>
                 <th>Convert / Redeem</th>
               </tr>
             </thead>
@@ -1228,14 +1273,41 @@ export default class App extends PureComponent {
             </tbody>
           </Table>
           <div className="misc-links">
-           <ul class="link-list">
-             <li> <a href="https://medium.com/sunrise-over-the-merkle-trees/how-to-use-augur-foundry-315f408c0d57" target="_blank">
-<span class="link_emoji">&#128129;</span>Tutorial</a></li>
-             <li> <a href="https://pools.balancer.exchange/#/pool/0x6b74fb4e4b3b177b8e95ba9fa4c3a3121d22fbfb/" target="_blank"><span class="link_emoji">&#128167;</span>Balancer Pool</a></li>
-             <li> <a href="https://catnip.exchange/" target="_blank"><span class="link_emoji">&#128049;</span>catnip exchange</a></li>
-             <li> <a href="https://github.com/aug-dao/augur_foundry" target="_blank"><span class="link_emoji"> &#128187;</span>Codebase</a></li>
-
-           </ul>
+            <ul class="link-list">
+              <li>
+                {" "}
+                <a
+                  href="https://medium.com/sunrise-over-the-merkle-trees/how-to-use-augur-foundry-315f408c0d57"
+                  target="_blank"
+                >
+                  <span class="link_emoji">&#128129;</span>Tutorial
+                </a>
+              </li>
+              <li>
+                {" "}
+                <a
+                  href="https://pools.balancer.exchange/#/pool/0x6b74fb4e4b3b177b8e95ba9fa4c3a3121d22fbfb/"
+                  target="_blank"
+                >
+                  <span class="link_emoji">&#128167;</span>Balancer Pool
+                </a>
+              </li>
+              <li>
+                {" "}
+                <a href="https://catnip.exchange/" target="_blank">
+                  <span class="link_emoji">&#128049;</span>catnip exchange
+                </a>
+              </li>
+              <li>
+                {" "}
+                <a
+                  href="https://github.com/aug-dao/augur_foundry"
+                  target="_blank"
+                >
+                  <span class="link_emoji"> &#128187;</span>Codebase
+                </a>
+              </li>
+            </ul>
           </div>
         </Jumbotron>
       </Container>
