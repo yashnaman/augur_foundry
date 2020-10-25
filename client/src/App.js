@@ -187,6 +187,7 @@ export default class App extends PureComponent {
         // totalOI: totalOI,
         foundryTVL: foundryTVL,
         foundryPecentage: foundryPecentage.toString(),
+        chainId: chainId,
       },
       () => {
         this.invetoryInit();
@@ -203,7 +204,7 @@ export default class App extends PureComponent {
   };
   async invetoryInit() {
     const { web3 } = this.state.web3Provider;
-    const { OUTCOMES, erc20, show } = this.state;
+    const { OUTCOMES, erc20, show, chainId } = this.state;
     let listData = [];
     // let yesTokenAddresses = [];
     // let noTokenAddress = [];
@@ -222,14 +223,18 @@ export default class App extends PureComponent {
       } = await this.getTokenAddresses(markets[x].address);
 
       let decimals = new BN(15);
+      let multiplier = new BN(3);
+      if (chainId == 42) {
+        multiplier = new BN(2);
+      }
       wrappedBalances.invalidTokenBalance = wrappedBalances.invalidTokenBalance.mul(
-        new BN(10).pow(new BN(2))
+        new BN(10).pow(multiplier)
       );
       wrappedBalances.yesTokenBalance = wrappedBalances.yesTokenBalance.mul(
-        new BN(10).pow(new BN(2))
+        new BN(10).pow(multiplier)
       );
       wrappedBalances.noTokenBalance = wrappedBalances.noTokenBalance.mul(
-        new BN(10).pow(new BN(2))
+        new BN(10).pow(multiplier)
       );
 
       // let decimals = new BN(15);
@@ -348,14 +353,40 @@ export default class App extends PureComponent {
                     variant="success"
                     className="m-left"
                     type="submit"
-                    onClick={(e) => this.unwrapShares(markets[x].address)}
+                    onClick={(e) =>
+                      this.unwrapShares(
+                        markets[x].address,
+                        wrappedBalances.yesTokenBalance.div(
+                          new BN(10).pow(multiplier)
+                        ),
+                        wrappedBalances.noTokenBalance.div(
+                          new BN(10).pow(multiplier)
+                        ),
+                        wrappedBalances.invalidTokenBalance.div(
+                          new BN(10).pow(multiplier)
+                        )
+                      )
+                    }
                   >
                     UNWRAP
                   </Button>
                   <Button
                     variant="danger"
                     type="submit"
-                    onClick={(e) => this.wrapShare(markets[x].address)}
+                    onClick={(e) =>
+                      this.wrapShare(
+                        markets[x].address,
+                        shareTokenBalances.yesTokenBalance.div(
+                          new BN(10).pow(multiplier)
+                        ),
+                        shareTokenBalances.noTokenBalance.div(
+                          new BN(10).pow(multiplier)
+                        ),
+                        shareTokenBalances.invalidTokenBalance.div(
+                          new BN(10).pow(multiplier)
+                        )
+                      )
+                    }
                   >
                     WRAP SHARES
                   </Button>
@@ -373,7 +404,20 @@ export default class App extends PureComponent {
                 <Button
                   variant="success"
                   type="submit"
-                  onClick={(e) => this.unwrapShares(markets[x].address)}
+                  onClick={(e) =>
+                    this.unwrapShares(
+                      markets[x].address,
+                      wrappedBalances.yesTokenBalance.div(
+                        new BN(10).pow(multiplier)
+                      ),
+                      wrappedBalances.noTokenBalance.div(
+                        new BN(10).pow(multiplier)
+                      ),
+                      wrappedBalances.invalidTokenBalance.div(
+                        new BN(10).pow(multiplier)
+                      )
+                    )
+                  }
                 >
                   UNWRAP
                 </Button>
@@ -382,7 +426,20 @@ export default class App extends PureComponent {
                   <Button
                     variant="danger"
                     type="submit"
-                    onClick={(e) => this.wrapShare(markets[x].address)}
+                    onClick={(e) =>
+                      this.wrapShare(
+                        markets[x].address,
+                        shareTokenBalances.yesTokenBalance.div(
+                          new BN(10).pow(multiplier)
+                        ),
+                        shareTokenBalances.noTokenBalance.div(
+                          new BN(10).pow(multiplier)
+                        ),
+                        shareTokenBalances.invalidTokenBalance.div(
+                          new BN(10).pow(multiplier)
+                        )
+                      )
+                    }
                   >
                     WRAP SHARES
                   </Button>
@@ -600,8 +657,13 @@ export default class App extends PureComponent {
 
     // await this.initData();
   }
-
-  async wrapShare(marketAddress) {
+  //amounts need to be BN objects with decimals take care of
+  async wrapShare(
+    marketAddress,
+    yesShareAmount,
+    noShareAmount,
+    invalidShareAmount
+  ) {
     // alert(marketAddress);
     if (marketAddress) {
       const { accounts } = this.state.web3Provider;
@@ -613,18 +675,28 @@ export default class App extends PureComponent {
 
       let tokenIds = [];
       let amounts = [];
-      // const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
-      for (let i = 0; i < 3; i++) {
-        let shareTokenId = await shareToken.methods
-          .getTokenId(marketAddress, i)
-          .call();
-        let shareBalance = new BN(
-          await shareToken.methods.balanceOf(accounts[0], shareTokenId).call()
+
+      if (!invalidShareAmount.isZero()) {
+        tokenIds.push(
+          await shareToken.methods
+            .getTokenId(marketAddress, OUTCOMES.INVALID)
+            .call()
         );
-        if (!shareBalance.isZero()) {
-          tokenIds.push(shareTokenId);
-          amounts.push(shareBalance.toString());
-        }
+        amounts.push(invalidShareAmount.toString());
+      }
+      if (!yesShareAmount.isZero()) {
+        tokenIds.push(
+          await shareToken.methods
+            .getTokenId(marketAddress, OUTCOMES.YES)
+            .call()
+        );
+        amounts.push(yesShareAmount.toString());
+      }
+      if (!noShareAmount.isZero()) {
+        tokenIds.push(
+          await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
+        );
+        amounts.push(noShareAmount.toString());
       }
       console.log("amounts", amounts);
 
@@ -933,42 +1005,48 @@ export default class App extends PureComponent {
     // console.log(await market.methods.isFinalized().call());
     return await market.methods.isFinalized().call();
   }
-
-  async unwrapShares(marketAddress) {
+  //amounts need to be BN objects with decimals take care of
+  async unwrapShares(
+    marketAddress,
+    yesTokenAmount,
+    noTokenAmount,
+    invalidTokenAmount
+  ) {
     const { accounts } = this.state.web3Provider;
     const { augurFoundry, shareToken, OUTCOMES } = this.state;
     if (marketAddress) {
-      const {
-        invalidTokenBalance,
-        yesTokenBalance,
-        noTokenBalance,
-      } = await this.getBalancesMarketERC20(marketAddress);
+      // const {
+      //   invalidTokenBalance,
+      //   yesTokenBalance,
+      //   noTokenBalance,
+      // } = await this.getBalancesMarketERC20(marketAddress);
 
       let amounts = [];
       let tokenIds = [];
-      if (!invalidTokenBalance.isZero()) {
+      if (!invalidTokenAmount.isZero()) {
         tokenIds.push(
           await shareToken.methods
             .getTokenId(marketAddress, OUTCOMES.INVALID)
             .call()
         );
-        amounts.push(invalidTokenBalance.toString());
+        amounts.push(invalidTokenAmount.toString());
       }
-      if (!yesTokenBalance.isZero()) {
+      if (!yesTokenAmount.isZero()) {
         tokenIds.push(
           await shareToken.methods
             .getTokenId(marketAddress, OUTCOMES.YES)
             .call()
         );
-        amounts.push(yesTokenBalance.toString());
+        amounts.push(yesTokenAmount.toString());
       }
-      if (!noTokenBalance.isZero()) {
+      if (!noTokenAmount.isZero()) {
         tokenIds.push(
           await shareToken.methods.getTokenId(marketAddress, OUTCOMES.NO).call()
         );
-        amounts.push(noTokenBalance.toString());
+        amounts.push(noTokenAmount.toString());
       }
       console.log("amounts", amounts);
+      console.log("tokenIds", tokenIds);
 
       // let amount =
       //   yesTokenBalance > noTokenBalance ? noTokenBalance : yesTokenBalance;
