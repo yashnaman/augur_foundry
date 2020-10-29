@@ -15,9 +15,9 @@ import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
 import NumberFormat from "react-number-format";
 
-import markets from "./configs/markets/markets-kovan.json";
+import markets from "./configs/markets/markets-mainnet.json";
 import contracts from "./configs/contracts.json";
-import environment from "./configs/environments/environment-kovan.json";
+import environment from "./configs/environments/environment-mainnet.json";
 
 import { notification } from "antd";
 import "antd/dist/antd.css";
@@ -99,14 +99,14 @@ export default class App extends PureComponent {
     let chainId = await web3.eth.net.getId();
     console.log("chainId: " + chainId);
 
-    // if (chainId != 1) {
-    //   this.openNotification(
-    //     "error",
-    //     "Wrong Network",
-    //     "Please connect to Ethereum mainnet"
-    //   );
-    //   return;
-    // }
+    if (chainId != 1) {
+      this.openNotification(
+        "error",
+        "Wrong Network",
+        "Please connect to Ethereum mainnet"
+      );
+      return;
+    }
 
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
 
@@ -208,7 +208,9 @@ export default class App extends PureComponent {
     // if (isWrapping) {
     defaultValues.yesAmount = web3.utils.fromWei(balances.yesTokenBalance);
     defaultValues.noAmount = web3.utils.fromWei(balances.noTokenBalance);
-    defaultValues.invalidAmount = web3.utils.fromWei(balances.invalidTokenBalance);
+    defaultValues.invalidAmount = web3.utils.fromWei(
+      balances.invalidTokenBalance
+    );
 
     // }
     this.setState({
@@ -1255,7 +1257,11 @@ export default class App extends PureComponent {
 
     console.log(yesAmount, noAmount, invalidAmount);
 
-    let multiplier = new BN(2);
+    let multiplier = new BN(3);
+    let chainId = await web3.eth.net.getId();
+    if (chainId == 42) {
+      multiplier = new BN(2);
+    }
     yesAmount = new BN(web3.utils.toWei(yesAmount));
     yesAmount = yesAmount.div(new BN(10).pow(multiplier));
 
@@ -1310,9 +1316,7 @@ export default class App extends PureComponent {
               <Row>
                 <Col xs={8}>
                   <Form.Group controlId="modal.ControlInput1">
-                    <Form.Label style={{ color: "#040404" }}>
-                      Yes:{" "}
-                    </Form.Label>
+                    <Form.Label style={{ color: "#040404" }}>Yes: </Form.Label>
                     <Form.Control
                       type="text"
                       name="yesAmount"
@@ -1324,9 +1328,7 @@ export default class App extends PureComponent {
                 </Col>
                 <Col xs={8}>
                   <Form.Group controlId="modal.ControlInput2">
-                    <Form.Label style={{ color: "#040404" }}>
-                      No:{" "}
-                    </Form.Label>
+                    <Form.Label style={{ color: "#040404" }}>No: </Form.Label>
                     <Form.Control
                       type="text"
                       name="noAmount"
