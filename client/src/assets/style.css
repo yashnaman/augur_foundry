@@ -228,3 +228,7 @@ td {
   font-weight: normal;
   font-size: 84%;
 }
+
+.modal-content {
+  padding: 0 0px 50px 100px;
+}

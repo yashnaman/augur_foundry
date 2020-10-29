@@ -208,13 +208,7 @@ export default class App extends PureComponent {
     // if (isWrapping) {
     defaultValues.yesAmount = web3.utils.fromWei(balances.yesTokenBalance);
     defaultValues.noAmount = web3.utils.fromWei(balances.noTokenBalance);
-    if (isWrapping) {
-      defaultValues.invalidAmount = 0;
-    } else {
-      defaultValues.invalidAmount = web3.utils.fromWei(
-        balances.invalidTokenBalance
-      );
-    }
+    defaultValues.invalidAmount = web3.utils.fromWei(balances.invalidTokenBalance);
 
     // }
     this.setState({
@@ -1317,7 +1311,7 @@ export default class App extends PureComponent {
                 <Col xs={8}>
                   <Form.Group controlId="modal.ControlInput1">
                     <Form.Label style={{ color: "#040404" }}>
-                      Yes Amount :{" "}
+                      Yes:{" "}
                     </Form.Label>
                     <Form.Control
                       type="text"
@@ -1331,7 +1325,7 @@ export default class App extends PureComponent {
                 <Col xs={8}>
                   <Form.Group controlId="modal.ControlInput2">
                     <Form.Label style={{ color: "#040404" }}>
-                      No Amount :{" "}
+                      No:{" "}
                     </Form.Label>
                     <Form.Control
                       type="text"
@@ -1345,7 +1339,7 @@ export default class App extends PureComponent {
                 <Col xs={8}>
                   <Form.Group controlId="modal.ControlInput3">
                     <Form.Label style={{ color: "#040404" }}>
-                      Invalid Amount :{" "}
+                      Invalid:{" "}
                     </Form.Label>
                     <Form.Control
                       type="text"
