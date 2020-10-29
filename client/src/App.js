@@ -15,9 +15,9 @@ import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
 import NumberFormat from "react-number-format";
 
-import markets from "./configs/markets/markets-mainnet.json";
+import markets from "./configs/markets/markets-kovan.json";
 import contracts from "./configs/contracts.json";
-import environment from "./configs/environments/environment-mainnet.json";
+import environment from "./configs/environments/environment-kovan.json";
 
 import { notification } from "antd";
 import "antd/dist/antd.css";
@@ -25,6 +25,7 @@ export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this.mintDaiForm = this.mintDaiForm.bind(this);
+    this.onModalSubmit = this.onModalSubmit.bind(this);
     this.state = {
       web3Provider: {
         web3: null,
@@ -32,9 +33,14 @@ export default class App extends PureComponent {
         isLogin: false,
         netWorkId: 0,
         accounts: [],
-        show: true,
       },
       listData: null,
+      show: false,
+      isWrapping: true,
+      marketId: null,
+      yesAmount: 0,
+      noAmount: 0,
+      invalidAmount: 0,
     };
   }
 
@@ -93,14 +99,14 @@ export default class App extends PureComponent {
     let chainId = await web3.eth.net.getId();
     console.log("chainId: " + chainId);
 
-    if (chainId != 1) {
-      this.openNotification(
-        "error",
-        "Wrong Network",
-        "Please connect to Ethereum Mainnet"
-      );
-      return;
-    }
+    // if (chainId != 1) {
+    //   this.openNotification(
+    //     "error",
+    //     "Wrong Network",
+    //     "Please connect to Ethereum mainnet"
+    //   );
+    //   return;
+    // }
 
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
 
@@ -195,8 +201,30 @@ export default class App extends PureComponent {
     );
     // notification.destroy();
   }
-  showModal = () => {
-    this.setState({ show: true });
+  showModal = (marketAddress, isWrapping, balances) => {
+    const { web3 } = this.state.web3Provider;
+    console.log("showModal");
+    let defaultValues = {};
+    // if (isWrapping) {
+    defaultValues.yesAmount = web3.utils.fromWei(balances.yesTokenBalance);
+    defaultValues.noAmount = web3.utils.fromWei(balances.noTokenBalance);
+    if (isWrapping) {
+      defaultValues.invalidAmount = 0;
+    } else {
+      defaultValues.invalidAmount = web3.utils.fromWei(
+        balances.invalidTokenBalance
+      );
+    }
+
+    // }
+    this.setState({
+      show: true,
+      marketAddress: marketAddress,
+      isWrapping: isWrapping,
+      yesAmount: defaultValues.yesAmount,
+      noAmount: defaultValues.noAmount,
+      invalidAmount: defaultValues.invalidAmount,
+    });
   };
 
   hideModal = () => {
@@ -346,18 +374,7 @@ export default class App extends PureComponent {
                     className="m-left"
                     type="submit"
                     onClick={(e) =>
-                      this.unwrapShares(
-                        markets[x].address,
-                        wrappedBalances.yesTokenBalance.div(
-                          new BN(10).pow(multiplier)
-                        ),
-                        wrappedBalances.noTokenBalance.div(
-                          new BN(10).pow(multiplier)
-                        ),
-                        wrappedBalances.invalidTokenBalance.div(
-                          new BN(10).pow(multiplier)
-                        )
-                      )
+                      this.showModal(markets[x].address, false, wrappedBalances)
                     }
                   >
                     UNWRAP
@@ -366,17 +383,10 @@ export default class App extends PureComponent {
                     variant="danger"
                     type="submit"
                     onClick={(e) =>
-                      this.wrapShare(
+                      this.showModal(
                         markets[x].address,
-                        shareTokenBalances.yesTokenBalance.div(
-                          new BN(10).pow(multiplier)
-                        ),
-                        shareTokenBalances.noTokenBalance.div(
-                          new BN(10).pow(multiplier)
-                        ),
-                        shareTokenBalances.invalidTokenBalance.div(
-                          new BN(10).pow(multiplier)
-                        )
+                        true,
+                        shareTokenBalances
                       )
                     }
                   >
@@ -397,18 +407,7 @@ export default class App extends PureComponent {
                   variant="success"
                   type="submit"
                   onClick={(e) =>
-                    this.unwrapShares(
-                      markets[x].address,
-                      wrappedBalances.yesTokenBalance.div(
-                        new BN(10).pow(multiplier)
-                      ),
-                      wrappedBalances.noTokenBalance.div(
-                        new BN(10).pow(multiplier)
-                      ),
-                      wrappedBalances.invalidTokenBalance.div(
-                        new BN(10).pow(multiplier)
-                      )
-                    )
+                    this.showModal(markets[x].address, false, wrappedBalances)
                   }
                 >
                   UNWRAP
@@ -419,17 +418,10 @@ export default class App extends PureComponent {
                     variant="danger"
                     type="submit"
                     onClick={(e) =>
-                      this.wrapShare(
+                      this.showModal(
                         markets[x].address,
-                        shareTokenBalances.yesTokenBalance.div(
-                          new BN(10).pow(multiplier)
-                        ),
-                        shareTokenBalances.noTokenBalance.div(
-                          new BN(10).pow(multiplier)
-                        ),
-                        shareTokenBalances.invalidTokenBalance.div(
-                          new BN(10).pow(multiplier)
-                        )
+                        true,
+                        shareTokenBalances
                       )
                     }
                   >
@@ -439,7 +431,7 @@ export default class App extends PureComponent {
                     variant="secondary"
                     className="m-left"
                     type="submit"
-                    onClick={(e) => this.redeemDAI(markets[x].address)}
+                    onClick={(e) => this.redeemDAI(markets[x].address, true)}
                   >
                     REDEEM DAI
                   </Button>
@@ -1253,6 +1245,45 @@ export default class App extends PureComponent {
       </Popover>
     );
   }
+  handleChange = async (e) => {
+    console.log("handle change");
+    console.log(e.target.name);
+    this.setState({ [e.target.name]: e.target.value });
+  };
+  onModalSubmit = async (e) => {
+    const { marketAddress, isWrapping } = this.state;
+    const { web3 } = this.state.web3Provider;
+    // let marketAddress = "0x4dea3bedae79da692f2675038c4d9b8c246b4fb6";
+    e.preventDefault();
+    let yesAmount = e.target.elements.yesAmount.value;
+    let noAmount = e.target.elements.noAmount.value;
+    let invalidAmount = e.target.elements.invalidAmount.value;
+
+    console.log(yesAmount, noAmount, invalidAmount);
+
+    let multiplier = new BN(2);
+    yesAmount = new BN(web3.utils.toWei(yesAmount));
+    yesAmount = yesAmount.div(new BN(10).pow(multiplier));
+
+    noAmount = new BN(web3.utils.toWei(noAmount));
+    noAmount = noAmount.div(new BN(10).pow(multiplier));
+
+    invalidAmount = new BN(web3.utils.toWei(invalidAmount));
+    invalidAmount = invalidAmount.div(new BN(10).pow(multiplier));
+
+    console.log("marketAddress", marketAddress);
+
+    if (isWrapping) {
+      await this.wrapShare(marketAddress, yesAmount, noAmount, invalidAmount);
+    } else {
+      await this.unwrapShares(
+        marketAddress,
+        yesAmount,
+        noAmount,
+        invalidAmount
+      );
+    }
+  };
   render() {
     return (
       <Container className="p-3 mainContainer">
@@ -1279,7 +1310,66 @@ export default class App extends PureComponent {
               GUR <br></br> FOUNDRY
             </span>
           </h3>
-
+          <Modal show={this.state.show} onHide={this.hideModal}>
+            <Modal.Header closeButton> </Modal.Header>
+            <Form onSubmit={this.onModalSubmit}>
+              <Row>
+                <Col xs={8}>
+                  <Form.Group controlId="modal.ControlInput1">
+                    <Form.Label style={{ color: "#040404" }}>
+                      Yes Amount :{" "}
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="yesAmount"
+                      placeholder="Amount of Yes Shares"
+                      value={this.state.yesAmount}
+                      onChange={this.handleChange}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={8}>
+                  <Form.Group controlId="modal.ControlInput2">
+                    <Form.Label style={{ color: "#040404" }}>
+                      No Amount :{" "}
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="noAmount"
+                      placeholder="Amount of No Shares"
+                      value={this.state.noAmount}
+                      onChange={this.handleChange}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={8}>
+                  <Form.Group controlId="modal.ControlInput3">
+                    <Form.Label style={{ color: "#040404" }}>
+                      Invalid Amount :{" "}
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="invalidAmount"
+                      placeholder="Amount of Invalid Shares"
+                      value={this.state.invalidAmount}
+                      onChange={this.handleChange}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={4}>
+                  {this.state.isWrapping ? (
+                    <Button variant="danger" type="submit">
+                      WRAP SHARES
+                    </Button>
+                  ) : (
+                    <Button variant="success" className="m-left" type="submit">
+                      UNWRAP{" "}
+                    </Button>
+                  )}
+                </Col>
+              </Row>
+            </Form>
+          </Modal>
           <Row>
             <Col xs={7}>
               <Jumbotron className="dropdownMarket">
