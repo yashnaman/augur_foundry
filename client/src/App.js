@@ -15,9 +15,9 @@ import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
 import NumberFormat from "react-number-format";
 
-import markets from "./configs/markets/markets-kovan.json";
+import markets from "./configs/markets/markets-mainnet.json";
 import contracts from "./configs/contracts.json";
-import environment from "./configs/environments/environment-kovan.json";
+import environment from "./configs/environments/environment-mainnet.json";
 
 import { notification } from "antd";
 import "antd/dist/antd.css";
@@ -93,14 +93,14 @@ export default class App extends PureComponent {
     let chainId = await web3.eth.net.getId();
     console.log("chainId: " + chainId);
 
-    // if (chainId != 1) {
-    //   this.openNotification(
-    //     "error",
-    //     "Wrong Network",
-    //     "Please connect to Ethereum Mainnet"
-    //   );
-    //   return;
-    // }
+    if (chainId != 1) {
+      this.openNotification(
+        "error",
+        "Wrong Network",
+        "Please connect to Ethereum Mainnet"
+      );
+      return;
+    }
 
     const OUTCOMES = { INVALID: 0, NO: 1, YES: 2 };
 
@@ -237,18 +237,6 @@ export default class App extends PureComponent {
         new BN(10).pow(multiplier)
       );
 
-      // let decimals = new BN(15);
-      // wrappedBalances.invalidTokenBalance = wrappedBalances.invalidTokenBalance.mul(
-      //   new BN(10).pow(new BN(3))
-      // );
-      // wrappedBalances.yesTokenBalance = wrappedBalances.yesTokenBalance.mul(
-      //   new BN(10).pow(new BN(3))
-      // );
-      // wrappedBalances.noTokenBalance = wrappedBalances.noTokenBalance.mul(
-      //   new BN(10).pow(new BN(3))
-      // );
-      // console.log(noTokenAddres);
-      // console.log(yesTokenAddress);
       let shareTokenBalances = await this.getBalancesMarketShareToken(
         markets[x].address
       );
@@ -325,7 +313,11 @@ export default class App extends PureComponent {
             <span
               style={{ color: "#ffd790", cursor: "pointer" }}
               onClick={async (event) =>
-                this.addTokenToMetamask(invalidTokenAddress, x, OUTCOMES.NO)
+                this.addTokenToMetamask(
+                  invalidTokenAddress,
+                  x,
+                  OUTCOMES.INVALID
+                )
               }
             >
               Show in wallet
@@ -476,8 +468,8 @@ export default class App extends PureComponent {
       tokenImage = markets[index].noIcon;
     } else if (outcome == 2) {
       tokenImage = markets[index].yesIcon;
-    } else {
-      throw new Error("Not a valid outcome");
+    } else if (outcome == 0) {
+      tokenImage = null;
     }
     const provider = window.web3.currentProvider;
     provider.sendAsync(
