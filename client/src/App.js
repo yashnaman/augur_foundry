@@ -278,8 +278,8 @@ export default class App extends PureComponent {
       // console.log(x);
       let isMarketsToBeDisplayed = isMoreThanZeroERC20s || isMoreThanZeroShares;
       console.log("displayOfMarket", x, isMarketsToBeDisplayed);
-      // if (isMarketsToBeDisplayed) {
-      if (true) {
+      if (isMarketsToBeDisplayed) {
+        // if (true) {
         listData.push(
           <tr>
             <OverlayTrigger
