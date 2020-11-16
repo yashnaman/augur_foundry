@@ -22,5 +22,31 @@
     "yesIcon": "https://cloudflare-ipfs.com/ipfs/QmRWo92JEL6s2ydN1fK2Q3KAX2rzBnTnfqkABFYHmA5EUT",
     "noIcon": "https://cloudflare-ipfs.com/ipfs/QmUVCPwVDCTzM2kBxejB85MS2m3KRjSW7f2w81pSr8ZvTL",
     "endTime": "1611273600"
+  },
+  {
+    "address": "0x6E6fFB10179FEbF29B0223D22793d1c1d8A8f541",
+    "extraInfo": {
+      "categories": ["Politics", "US Elections", ""],
+      "description": "Will the Democratic Party Control the Presidency, the Senate, and the House of Representatives on February 1st, 2021?",
+      "longDescription": "This market shall resolve as YES if and only if all three of the following conditions are true at 00:00 UTC on February 1st, 2021:\n\n1. The last inaugurated president of the U.S. is affiliated with the U.S. Democratic Party.\n2. The Senate Majority Leader is affiliated with the U.S. Democratic Party. \n3. The majority of voting members of the House of Representatives are affiliated with the U.S. Democratic Party",
+      "_scalarDenomination": "",
+      "offsetName": null,
+      "template": null
+    },
+    "YesTokenAddress": "0xf732eE9CCbf0Df22F53fBDd9ec88D62df298FBF8",
+    "NoTokenAddress": "0x542439Eca879E52E03E0d6E87bcdCA165634245D",
+    "invalidTokenAddress": "0xd88a33CeA70fE4e40Da9e19aD7b3cCD1d6d2a805",
+    "yesTokenId": "49952266140529865155400434447901968208997584642974691086754660656591497330688",
+    "noTokenId": "49952266140529865155400434447901968208997584642974381601744839311522772549632",
+    "invalidTokenId": "49952266140529865155400434447901968208997584642974072116735017966454047768576",
+    "yesName": "INVALID Dem Control Token",
+    "noName": "NO Dem Control Token",
+    "invalidName": "INVALID Dem Control Token",
+    "yesSymbol": "yBlue",
+    "noSymbol": "nBlue",
+    "invalidSymbol": "iBlue",
+    "yesIcon": "https://cloudflare-ipfs.com/ipfs/QmRWo92JEL6s2ydN1fK2Q3KAX2rzBnTnfqkABFYHmA5EUT",
+    "noIcon": "https://cloudflare-ipfs.com/ipfs/QmUVCPwVDCTzM2kBxejB85MS2m3KRjSW7f2w81pSr8ZvTL",
+    "endTime": "1612137600"
   }
 ]

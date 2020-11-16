@@ -99,7 +99,7 @@ export default class App extends PureComponent {
     let chainId = await web3.eth.net.getId();
     console.log("chainId: " + chainId);
 
-    if (chainId != 1) {
+    if (chainId !== 1) {
       this.openNotification(
         "error",
         "Wrong Network",
@@ -165,7 +165,7 @@ export default class App extends PureComponent {
     let n = foundryTVLEth.indexOf(".");
     let foundryTVL = foundryTVLEth.substring(
       0,
-      n != -1 ? n + 3 : foundryTVLEth.length
+      n !== -1 ? n + 3 : foundryTVLEth.length
     );
     let foundryPecentageWei = foundryTVLWei
       .mul(new BN(10).pow(new BN(20)))
@@ -176,7 +176,7 @@ export default class App extends PureComponent {
     n = foundryPecentageEth.indexOf(".");
     let foundryPecentage = foundryPecentageEth.substring(
       0,
-      n != -1 ? n + 3 : foundryPecentageEth.length
+      n !== -1 ? n + 3 : foundryPecentageEth.length
     );
 
     this.setState(
@@ -234,8 +234,8 @@ export default class App extends PureComponent {
     // let noTokenAddress = [];
     // console.log(markets);
     this.openNotification("info", "Updating Markets...", "", 5);
-    // for (let x = 0; x < markets.length; x++) {
-    for (let x = 0; x < 1; x++) {
+    for (let x = 0; x < markets.length; x++) {
+      // for (let x = 0; x < 1; x++) {
       // let x = 0;
       let wrappedBalances = await this.getBalancesMarketERC20(
         markets[x].address
@@ -271,103 +271,143 @@ export default class App extends PureComponent {
         wrappedBalances
       );
       let marketFinalized = await this.isMarketFinalized(markets[x].address);
+
+      let erc20Symbols = await this.getERC20Symbols(markets[x].address);
       // console.log(isMoreThanZeroShares);
       // console.log(isMoreThanZeroERC20s);
       // console.log(x);
-
-      listData.push(
-        <tr>
-          <OverlayTrigger
-            placement="right"
-            overlay={this.showMarketInfoOnHover(x)}
-          >
-            <td
-            // onMouseEnter={() => this.showMarketInfoOnHover(x, true)}
-            // onMouseLeave={() => this.showMarketInfoOnHover(x, false)}
+      let isMarketsToBeDisplayed = isMoreThanZeroERC20s || isMoreThanZeroShares;
+      console.log("displayOfMarket", x, isMarketsToBeDisplayed);
+      if (isMarketsToBeDisplayed) {
+        // if (true) {
+        listData.push(
+          <tr>
+            <OverlayTrigger
+              placement="right"
+              overlay={this.showMarketInfoOnHover(x)}
             >
-              {markets[x].extraInfo.description}
+              <td
+              // onMouseEnter={() => this.showMarketInfoOnHover(x, true)}
+              // onMouseLeave={() => this.showMarketInfoOnHover(x, false)}
+              >
+                {markets[x].extraInfo.description}
+              </td>
+            </OverlayTrigger>
+            <td>
+              Yes:{" "}
+              {web3.utils
+                .fromWei(shareTokenBalances.yesTokenBalance.toString())
+                .toString()}
+              <br />
+              No:{" "}
+              {web3.utils.fromWei(shareTokenBalances.noTokenBalance).toString()}
+              <br />
+              Invalid:{" "}
+              {web3.utils
+                .fromWei(shareTokenBalances.invalidTokenBalance)
+                .toString()}
             </td>
-          </OverlayTrigger>
-          <td>
-            Yes:{" "}
-            {web3.utils
-              .fromWei(shareTokenBalances.yesTokenBalance.toString())
-              .toString()}
-            <br />
-            No:{" "}
-            {web3.utils.fromWei(shareTokenBalances.noTokenBalance).toString()}
-            <br />
-            Invalid:{" "}
-            {web3.utils
-              .fromWei(shareTokenBalances.invalidTokenBalance)
-              .toString()}
-          </td>
-          <td>
-            Yes:{" "}
-            {web3.utils.fromWei(wrappedBalances.yesTokenBalance).toString()} (
-            <span
-              style={{ color: "#ffd790", cursor: "pointer" }}
-              onClick={async (event) =>
-                this.addTokenToMetamask(yesTokenAddress, x, OUTCOMES.YES)
-              }
-            >
-              Show in wallet
-            </span>
-            )
-            <br />
-            No: {web3.utils
-              .fromWei(wrappedBalances.noTokenBalance)
-              .toString()}{" "}
-            (
-            <span
-              style={{ color: "#ffd790", cursor: "pointer" }}
-              onClick={async (event) =>
-                this.addTokenToMetamask(noTokenAddress, x, OUTCOMES.NO)
-              }
-            >
-              Show in wallet
-            </span>
-            )
-            <br />
-            Invalid:{" "}
-            {web3.utils
-              .fromWei(wrappedBalances.invalidTokenBalance)
-              .toString()}{" "}
-            (
-            <span
-              style={{ color: "#ffd790", cursor: "pointer" }}
-              onClick={async (event) =>
-                this.addTokenToMetamask(
-                  invalidTokenAddress,
-                  x,
-                  OUTCOMES.INVALID
-                )
-              }
-            >
-              Show in wallet
-            </span>
-            )
-          </td>
-          <td>
-            {isMoreThanZeroShares || isMoreThanZeroERC20s ? (
-              marketFinalized ? (
-                <span>
-                  <Button
-                    variant="secondary"
-                    className="m-left"
-                    type="submit"
-                    onClick={(e) =>
-                      this.claimWinningsWhenWrapped(markets[x].address)
-                    }
-                  >
-                    REDEEM DAI
-                  </Button>
-                </span>
-              ) : isMoreThanZeroShares && isMoreThanZeroERC20s ? (
-                <span>
+            <td>
+              {erc20Symbols.yesSymbol}:{" "}
+              {web3.utils.fromWei(wrappedBalances.yesTokenBalance).toString()} (
+              <span
+                style={{ color: "#ffd790", cursor: "pointer" }}
+                onClick={async (event) =>
+                  this.addTokenToMetamask(yesTokenAddress, x, OUTCOMES.YES)
+                }
+              >
+                Show in wallet
+              </span>
+              )
+              <br />
+              {erc20Symbols.noSymbol}:{" "}
+              {web3.utils.fromWei(wrappedBalances.noTokenBalance).toString()} (
+              <span
+                style={{ color: "#ffd790", cursor: "pointer" }}
+                onClick={async (event) =>
+                  this.addTokenToMetamask(noTokenAddress, x, OUTCOMES.NO)
+                }
+              >
+                Show in wallet
+              </span>
+              )
+              <br />
+              {erc20Symbols.invalidSymbol}:{" "}
+              {web3.utils
+                .fromWei(wrappedBalances.invalidTokenBalance)
+                .toString()}{" "}
+              (
+              <span
+                style={{ color: "#ffd790", cursor: "pointer" }}
+                onClick={async (event) =>
+                  this.addTokenToMetamask(
+                    invalidTokenAddress,
+                    x,
+                    OUTCOMES.INVALID
+                  )
+                }
+              >
+                Show in wallet
+              </span>
+              )
+            </td>
+            <td>
+              {isMoreThanZeroShares || isMoreThanZeroERC20s ? (
+                marketFinalized ? (
+                  <span>
+                    <Button
+                      variant="secondary"
+                      className="m-left"
+                      type="submit"
+                      onClick={(e) =>
+                        this.claimWinningsWhenWrapped(markets[x].address)
+                      }
+                    >
+                      REDEEM DAI
+                    </Button>
+                  </span>
+                ) : isMoreThanZeroShares && isMoreThanZeroERC20s ? (
+                  <span>
+                    <Button
+                      variant="success"
+                      className="m-left"
+                      type="submit"
+                      onClick={(e) =>
+                        this.showModal(
+                          markets[x].address,
+                          false,
+                          wrappedBalances
+                        )
+                      }
+                    >
+                      UNWRAP
+                    </Button>
+                    <Button
+                      variant="danger"
+                      type="submit"
+                      onClick={(e) =>
+                        this.showModal(
+                          markets[x].address,
+                          true,
+                          shareTokenBalances
+                        )
+                      }
+                    >
+                      WRAP SHARES
+                    </Button>
+
+                    <Button
+                      variant="secondary"
+                      className="m-left"
+                      type="submit"
+                      onClick={(e) => this.redeemDAI(markets[x].address)}
+                    >
+                      REDEEM DAI
+                    </Button>
+                  </span>
+                ) : isMoreThanZeroERC20s ? (
                   <Button
                     variant="success"
-                    className="m-left"
                     type="submit"
                     onClick={(e) =>
                       this.showModal(markets[x].address, false, wrappedBalances)
@@ -375,70 +415,38 @@ export default class App extends PureComponent {
                   >
                     UNWRAP
                   </Button>
-                  <Button
-                    variant="danger"
-                    type="submit"
-                    onClick={(e) =>
-                      this.showModal(
-                        markets[x].address,
-                        true,
-                        shareTokenBalances
-                      )
-                    }
-                  >
-                    WRAP SHARES
-                  </Button>
-
-                  <Button
-                    variant="secondary"
-                    className="m-left"
-                    type="submit"
-                    onClick={(e) => this.redeemDAI(markets[x].address)}
-                  >
-                    REDEEM DAI
-                  </Button>
-                </span>
-              ) : isMoreThanZeroERC20s ? (
-                <Button
-                  variant="success"
-                  type="submit"
-                  onClick={(e) =>
-                    this.showModal(markets[x].address, false, wrappedBalances)
-                  }
-                >
-                  UNWRAP
-                </Button>
+                ) : (
+                  <span>
+                    <Button
+                      variant="danger"
+                      type="submit"
+                      onClick={(e) =>
+                        this.showModal(
+                          markets[x].address,
+                          true,
+                          shareTokenBalances
+                        )
+                      }
+                    >
+                      WRAP SHARES
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="m-left"
+                      type="submit"
+                      onClick={(e) => this.redeemDAI(markets[x].address, true)}
+                    >
+                      REDEEM DAI
+                    </Button>
+                  </span>
+                )
               ) : (
-                <span>
-                  <Button
-                    variant="danger"
-                    type="submit"
-                    onClick={(e) =>
-                      this.showModal(
-                        markets[x].address,
-                        true,
-                        shareTokenBalances
-                      )
-                    }
-                  >
-                    WRAP SHARES
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    className="m-left"
-                    type="submit"
-                    onClick={(e) => this.redeemDAI(markets[x].address, true)}
-                  >
-                    REDEEM DAI
-                  </Button>
-                </span>
-              )
-            ) : (
-              <span></span>
-            )}
-          </td>
-        </tr>
-      );
+                <span></span>
+              )}
+            </td>
+          </tr>
+        );
+      }
     }
     //console.log(listData)
     this.setState({ listData: listData });
@@ -452,11 +460,11 @@ export default class App extends PureComponent {
 
     let decimals = await erc20.methods.decimals().call();
     let tokenImage;
-    if (outcome == 1) {
+    if (outcome === 1) {
       tokenImage = markets[index].noIcon;
-    } else if (outcome == 2) {
+    } else if (outcome === 2) {
       tokenImage = markets[index].yesIcon;
-    } else if (outcome == 0) {
+    } else if (outcome === 0) {
       tokenImage = null;
     }
     const provider = window.web3.currentProvider;
@@ -827,7 +835,7 @@ export default class App extends PureComponent {
           invalidShareBalance,
           BN.min(noShareBalance, yesShareBalance)
         );
-        if (amount.cmp(new BN(0)) == 0) {
+        if (amount.cmp(new BN(0)) === 0) {
           this.openNotification(
             "error",
             "Not enough Balance",
@@ -1122,6 +1130,27 @@ export default class App extends PureComponent {
       yesTokenAddress: yesTokenAddress,
       noTokenAddress: noTokenAddress,
       invalidTokenAddress: invalidTokenAddress,
+    };
+  }
+  async getERC20Symbols(marketAddress) {
+    const { erc20 } = this.state;
+    let {
+      yesTokenAddress,
+      noTokenAddress,
+      invalidTokenAddress,
+    } = await this.getTokenAddresses(marketAddress);
+
+    erc20.options.address = yesTokenAddress;
+    let yesSymbol = await erc20.methods.symbol().call();
+    erc20.options.address = noTokenAddress;
+    let noSymbol = await erc20.methods.symbol().call();
+    erc20.options.address = invalidTokenAddress;
+    let invalidSymbol = await erc20.methods.symbol().call();
+
+    return {
+      yesSymbol: yesSymbol,
+      noSymbol: noSymbol,
+      invalidSymbol: invalidSymbol,
     };
   }
   async getBalancesMarketShareToken(marketAddress) {

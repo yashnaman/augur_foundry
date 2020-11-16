@@ -11,6 +11,7 @@
     "react-dom": "^16.13.1",
     "react-number-format": "^4.4.1",
     "react-scripts": "3.4.3",
+    "uncontrollable": "7.1.1",
     "web3": "1.2.2",
     "web3-js": "^1.0.5-beta.26"
   },
@@ -34,5 +35,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "resolutions": {
+    "uncontrollable": "7.1.1"
   }
 }
