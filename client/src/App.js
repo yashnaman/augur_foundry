@@ -771,7 +771,7 @@ export default class App extends PureComponent {
       if (isMarketFinalized) {
         console.log("claiming trading proceeds");
         //last arg is for fingerprint that has something to do with affiliate fees(NOTE: what exactly?)
-        this.openNotification("info", "Redeeming DAI on winning shares", " ");
+        this.openNotification("info", "Redeeming winning shares for DAI", " ");
         //Add a check that user has the complete shares
         //i.e. balanceofShareTOken for YES/NO/INVALID should be greater then zero
 
@@ -846,7 +846,7 @@ export default class App extends PureComponent {
 
         this.openNotification(
           "info",
-          "Redeeming DAI by selling your shares",
+          "Redeeming your shares for DAI",
           ""
         );
         shareToken.methods
