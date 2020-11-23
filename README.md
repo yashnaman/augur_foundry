@@ -6,7 +6,7 @@ Set up augur locally
 
 1. git clone https://github.com/AugurProject/augur
 2. git checkout v2
-3. change [this](https://github.com/AugurProject/augur/blob/v2/packages/augur-utils/src/configuration.ts#L219) parameter to false(we need this to controll time)
+3. change [this](https://github.com/AugurProject/augur/blob/v2/packages/augur-utils/src/configuration.ts#L224) parameter to false(we need this to controll time)
 4. yarn
 5. yarn build
 6. cd augur/packages/augur-core
