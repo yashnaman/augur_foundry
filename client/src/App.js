@@ -9,7 +9,7 @@ import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Popover from "react-bootstrap/Popover";
-import { Modal } from "react-bootstrap";
+import { Modal, Tooltip } from "react-bootstrap";
 
 import metaMaskStore from "./components/metaMask";
 import { BN, constants } from "@openzeppelin/test-helpers";
@@ -19,12 +19,15 @@ import markets from "./configs/markets/markets-mainnet.json";
 import contracts from "./configs/contracts.json";
 import environment from "./configs/environments/environment-mainnet.json";
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 import { notification } from "antd";
 import "antd/dist/antd.css";
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this.mintDaiForm = this.mintDaiForm.bind(this);
+    this.setMarket = this.setMarket.bind(this);
     this.onModalSubmit = this.onModalSubmit.bind(this);
     this.state = {
       web3Provider: {
@@ -41,6 +44,9 @@ export default class App extends PureComponent {
       yesAmount: 0,
       noAmount: 0,
       invalidAmount: 0,
+      selectedMarket: null,
+      isShowPools: false,
+      isShowInfoModal: false
     };
   }
 
@@ -70,6 +76,20 @@ export default class App extends PureComponent {
       this.metaNetwrokChange.bind(this)
     );
   }
+
+  setMarket(e) {
+    console.log('target', e.target.value);
+    console.log('markets', markets);
+    if(e.target.value == 0) {
+      this.setState({selectedMarket: null})
+    } else {
+      let currentMarket = markets.find(item => item.address === e.target.value);
+      this.setState({
+        selectedMarket: currentMarket
+      });
+    }    
+  }
+
   metaMaskConnected() {
     this.setState({ web3Provider: metaMaskStore.getWeb3() }, () => {
       this.initData();
@@ -226,6 +246,27 @@ export default class App extends PureComponent {
   hideModal = () => {
     this.setState({ show: false });
   };
+
+  hidePoolsModal = () => {
+    this.setState({ isShowPools: false});
+  };
+
+  hideInfoModal = () => {
+    this.setState({ isShowInfoModal: false});
+  }
+
+  showPoolsModal = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({ isShowPools: true});
+  }
+
+  showInfoModal = () => {
+    if(this.state.selectedMarket !== null) {
+      this.setState({ isShowInfoModal: true});
+    }    
+  }
+
   async invetoryInit() {
     const { web3 } = this.state.web3Provider;
     const { OUTCOMES, erc20, show, chainId } = this.state;
@@ -1399,8 +1440,8 @@ export default class App extends PureComponent {
             <Col xs={7}>
               <Jumbotron className="dropdownMarket">
                 <Form onSubmit={this.mintDaiForm}>
-                  <Form.Group controlId="exampleForm.SelectCustom">
-                    <Form.Control as="select" custom name="marketIds">
+                  <div className="with-info">
+                    <Form.Control as="select" custom name="marketIds" onChange={this.setMarket}>
                       <option value={0}>Select Market</option>
                       {markets.map((i) => (
                         <option value={i.address} key={i.address}>
@@ -1408,8 +1449,9 @@ export default class App extends PureComponent {
                         </option>
                       ))}
                     </Form.Control>
-                  </Form.Group>
 
+                    <FontAwesomeIcon icon="info-circle" onClick={this.showInfoModal}/>
+                  </div>
                   <Row>
                     <Col xs={8}>
                       <Form.Group controlId="exampleForm.ControlInput1">
@@ -1473,8 +1515,9 @@ export default class App extends PureComponent {
                 <a
                   href="https://pools.balancer.exchange/#/pool/0x6b74fb4e4b3b177b8e95ba9fa4c3a3121d22fbfb/"
                   target="_blank"
+                  onClick={this.showPoolsModal}
                 >
-                  <span class="link_emoji">&#128167;</span>Balancer Pool
+                  <span class="link_emoji">&#128167;</span>Balancer Pools
                 </a>
               </li>
               <li>
@@ -1495,6 +1538,152 @@ export default class App extends PureComponent {
             </ul>
           </div>
         </Jumbotron>
+
+        <Modal show={this.state.isShowPools} onHide={this.hidePoolsModal}>
+          <Modal.Header closeButton>            
+            <Modal.Title>Balancer Pools</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Row>
+              <Col>                
+                <a href="https://pools.balancer.exchange/#/pool/0x6b74fb4e4b3b177b8e95ba9fa4c3a3121d22fbfb/" target="_blank">
+                  <h5>yTrump/nTrump/DAI: </h5>
+                </a>
+              </Col>
+              <Col>                
+                <a href="https://pools.balancer.exchange/#/pool/0xed0413d19cdf94759bbe3fe9981c4bd085b430cf" target="_blank">
+                  <h5>nTrump/DAI: </h5>
+                </a>
+              </Col>
+              <Col>                
+                <a href="https://pools.balancer.exchange/#/pool/0xea862ffed19a2e5b8ac1b10fe14c88c1b35d4a2c" target="_blank">
+                  <h5>yTrump/iTrump: </h5>
+                </a>
+              </Col>
+              <Col>
+                <a href="https://pools.balancer.exchange/#/pool/0x68c74e157f35a3e40f1b02bba3e6e3827d534059" target="_blank">
+                  <h5>yBlue/nBlue/DAI: </h5>
+                </a>
+              </Col>
+            </Row>            
+          </Modal.Body>
+        </Modal>
+
+        <Modal show={this.state.isShowInfoModal} onHide={this.hideInfoModal}>
+          <Modal.Header closeButton>            
+            <Modal.Title>Current Selected Market Info</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Row>
+            {this.state.selectedMarket !== null && 
+              <>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>Terms: </h5>
+                    <p>{this.state.selectedMarket.extraInfo.description}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>Expiration date:</h5>
+                    <p>{this.state.selectedMarket.endTime}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>Market ID:</h5>
+                    <p>{this.state.selectedMarket.address}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>YesTokenAddress:</h5>
+                    <p>{this.state.selectedMarket.YesTokenAddress}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>NoTokenAddress:</h5>
+                    <p>{this.state.selectedMarket.NoTokenAddress}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>invalidTokenAddress:</h5>
+                    <p>{this.state.selectedMarket.invalidTokenAddress}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>yesTokenId:</h5>
+                    <p>{this.state.selectedMarket.yesTokenId}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>noTokenId:</h5>
+                    <p>{this.state.selectedMarket.noTokenId}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>invalidTokenId:</h5>
+                    <p>{this.state.selectedMarket.invalidTokenId}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>yesName:</h5>
+                    <p>{this.state.selectedMarket.yesName}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>noName:</h5>
+                    <p>{this.state.selectedMarket.noName}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>invalidName:</h5>
+                    <p>{this.state.selectedMarket.invalidName}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>yesSymbol:</h5>
+                    <p>{this.state.selectedMarket.yesSymbol}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>noSymbol:</h5>
+                    <p>{this.state.selectedMarket.noSymbol}</p>
+                  </div>
+                </Col>
+                <Col xs={12}>
+                  <div className="tooltip-item">
+                    <h5>invalidSymbol:</h5>
+                    <p>{this.state.selectedMarket.invalidSymbol}</p>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>yesIcon:</h5>
+                    <img src={this.state.selectedMarket.yesIcon} alt=""/>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="tooltip-item">
+                    <h5>noIcon:</h5>
+                    <img src={this.state.selectedMarket.noIcon} alt=""/>
+                  </div>
+                </Col>
+              </>
+            }
+            </Row>            
+          </Modal.Body>
+        </Modal>  
       </Container>
     );
   }

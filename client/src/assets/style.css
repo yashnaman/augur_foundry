@@ -52,8 +52,17 @@ body {
   width: auto;
 }
 
+.with-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 .custom-select {
-  width: 80%;
+  margin-right: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .col-4 {
@@ -230,5 +239,86 @@ td {
 }
 
 .modal-content {
-  padding: 0 0px 50px 100px;
+  /* padding: 0 0px 50px 100px; */
+}
+
+.modal-header {
+  color: black;
+}
+
+.tooltip {
+  border-radius: 10px;
+}
+
+.tooltip .arrow::before {
+  border-right-color: transparent !important;
+}
+
+.tooltip-inner {
+  background-color: #171717 !important;
+  text-align: left;
+  padding: 0px !important;
+  border-radius: 10px;
+}
+
+.custom-tooltip {
+  border: 1px solid gray;
+  width: 100%;
+}
+
+.tooltip-item {
+  margin-bottom: 5px;
+  margin: 10px;
+}
+
+.tooltip-item h5 {
+  color: white;
+}
+
+.tooltip-item p {
+  margin: 0px !important;
+  line-break: auto;
+}
+
+.modal-body .row {
+  margin-right: 0px;
+  margin-left: 0px;
+}
+
+.modal-body .row .col {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  background-color: #171717;
+  border-radius: 10px;
+  margin: 6px;
+  color: white;
+}
+
+.modal-body .row .col-6 {
+  background-color: #171717;
+  border-radius: 10px;
+  max-width: 48%;
+  margin: 5px 1%;
+}
+
+.modal-body .row .col-12 {
+  background-color: #171717;
+  border-radius: 10px;
+  max-width: 98%;
+  margin: 5px 1%;
+}
+
+.modal-body .row .col-6 p {
+  line-break: anywhere;
+}
+
+.modal-body .row .col a h5 {
+  color: white !important;
+}
+
+.modal-body .row .col-6 .tooltip-item img {
+  width: 50px;
 }
