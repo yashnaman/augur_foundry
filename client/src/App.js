@@ -930,7 +930,7 @@ export default class App extends PureComponent {
           // console.log(balanceOfWinningOutcomeWrapped.toString());
           if (balanceOfWinningOutcomeWrapped.cmp(new BN(0)) == 0) {
             console.log("redeem DAI called");
-            let shareTokenBalances = await this.getYesNoBalancesMarketShareToken(
+            let shareTokenBalances = await this.getBalancesMarketShareToken(
               marketAddress
             );
             if (await this.checkIfMoreThanZeroShares(shareTokenBalances)) {
@@ -1203,8 +1203,6 @@ export default class App extends PureComponent {
     const { accounts } = this.state.web3Provider;
     // console.log("accounts{0}" + accounts[0]);
     // console.log("marketAddress" + marketAddress);
-
-    // let balances = await this.getYesNoBalancesMarketERC20(marketAddress);
 
     if (
       wrappedBalances.yesTokenBalance.cmp(new BN(0)) == 0 &&
