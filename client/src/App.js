@@ -29,6 +29,7 @@ export default class App extends PureComponent {
     this.mintDaiForm = this.mintDaiForm.bind(this);
     this.setMarket = this.setMarket.bind(this);
     this.onModalSubmit = this.onModalSubmit.bind(this);
+    this.parseDate = this.parseDate.bind(this);
     this.state = {
       web3Provider: {
         web3: null,
@@ -45,8 +46,7 @@ export default class App extends PureComponent {
       noAmount: 0,
       invalidAmount: 0,
       selectedMarket: null,
-      isShowPools: false,
-      isShowInfoModal: false
+      isShowPools: false
     };
   }
 
@@ -78,8 +78,6 @@ export default class App extends PureComponent {
   }
 
   setMarket(e) {
-    console.log('target', e.target.value);
-    console.log('markets', markets);
     if(e.target.value == 0) {
       this.setState({selectedMarket: null})
     } else {
@@ -88,6 +86,17 @@ export default class App extends PureComponent {
         selectedMarket: currentMarket
       });
     }    
+  }
+
+  parseDate(params) {
+    let unix_timestamp = parseInt(params);
+    let a = new Date(unix_timestamp * 1000);
+    let months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let year = a.getFullYear();
+    let month = months[a.getMonth()];
+    let date = a.getDate();
+    let time = date + ' ' + month + ' ' + year;
+    return time;
   }
 
   metaMaskConnected() {
@@ -251,20 +260,10 @@ export default class App extends PureComponent {
     this.setState({ isShowPools: false});
   };
 
-  hideInfoModal = () => {
-    this.setState({ isShowInfoModal: false});
-  }
-
   showPoolsModal = (e) => {
     e.preventDefault();
     e.stopPropagation();
     this.setState({ isShowPools: true});
-  }
-
-  showInfoModal = () => {
-    if(this.state.selectedMarket !== null) {
-      this.setState({ isShowInfoModal: true});
-    }    
   }
 
   async invetoryInit() {
@@ -1450,7 +1449,36 @@ export default class App extends PureComponent {
                       ))}
                     </Form.Control>
 
-                    <FontAwesomeIcon icon="info-circle" onClick={this.showInfoModal}/>
+                    <OverlayTrigger
+                      placement={"right"}                    
+                      overlay={
+                        <Tooltip id="tooltip">
+                          {
+                            this.state.selectedMarket && 
+                              <>
+                                <div className="tooltip-item">
+                                  <h5>Market title: </h5>
+                                  <p>{this.state.selectedMarket.extraInfo.description}</p>
+                                </div>
+                                <div className="tooltip-item">
+                                  <h5>Market Description: </h5>
+                                  <p>{this.state.selectedMarket.extraInfo.longDescription}</p>
+                                </div>
+                                <div className="tooltip-item">
+                                  <h5>Expiration date: </h5>
+                                  <p>{this.parseDate(this.state.selectedMarket.endTime)}</p>
+                                </div>
+                                <div className="tooltip-item">
+                                  <h5>Market ID: </h5>
+                                  <p>{this.state.selectedMarket.address}</p>
+                                </div>
+                              </>
+                          }
+                        </Tooltip>
+                      }
+                    >
+                      <FontAwesomeIcon icon="info-circle"/>
+                    </OverlayTrigger>                    
                   </div>
                   <Row>
                     <Col xs={8}>
@@ -1568,122 +1596,6 @@ export default class App extends PureComponent {
             </Row>            
           </Modal.Body>
         </Modal>
-
-        <Modal show={this.state.isShowInfoModal} onHide={this.hideInfoModal}>
-          <Modal.Header closeButton>            
-            <Modal.Title>Current Selected Market Info</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Row>
-            {this.state.selectedMarket !== null && 
-              <>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>Terms: </h5>
-                    <p>{this.state.selectedMarket.extraInfo.description}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>Expiration date:</h5>
-                    <p>{this.state.selectedMarket.endTime}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>Market ID:</h5>
-                    <p>{this.state.selectedMarket.address}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>YesTokenAddress:</h5>
-                    <p>{this.state.selectedMarket.YesTokenAddress}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>NoTokenAddress:</h5>
-                    <p>{this.state.selectedMarket.NoTokenAddress}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>invalidTokenAddress:</h5>
-                    <p>{this.state.selectedMarket.invalidTokenAddress}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>yesTokenId:</h5>
-                    <p>{this.state.selectedMarket.yesTokenId}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>noTokenId:</h5>
-                    <p>{this.state.selectedMarket.noTokenId}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>invalidTokenId:</h5>
-                    <p>{this.state.selectedMarket.invalidTokenId}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>yesName:</h5>
-                    <p>{this.state.selectedMarket.yesName}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>noName:</h5>
-                    <p>{this.state.selectedMarket.noName}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>invalidName:</h5>
-                    <p>{this.state.selectedMarket.invalidName}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>yesSymbol:</h5>
-                    <p>{this.state.selectedMarket.yesSymbol}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>noSymbol:</h5>
-                    <p>{this.state.selectedMarket.noSymbol}</p>
-                  </div>
-                </Col>
-                <Col xs={12}>
-                  <div className="tooltip-item">
-                    <h5>invalidSymbol:</h5>
-                    <p>{this.state.selectedMarket.invalidSymbol}</p>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>yesIcon:</h5>
-                    <img src={this.state.selectedMarket.yesIcon} alt=""/>
-                  </div>
-                </Col>
-                <Col xs={6}>
-                  <div className="tooltip-item">
-                    <h5>noIcon:</h5>
-                    <img src={this.state.selectedMarket.noIcon} alt=""/>
-                  </div>
-                </Col>
-              </>
-            }
-            </Row>            
-          </Modal.Body>
-        </Modal>  
       </Container>
     );
   }
