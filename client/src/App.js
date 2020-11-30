@@ -29,7 +29,9 @@ export default class App extends PureComponent {
     this.mintDaiForm = this.mintDaiForm.bind(this);
     this.setMarket = this.setMarket.bind(this);
     this.onModalSubmit = this.onModalSubmit.bind(this);
-    this.parseDate = this.parseDate.bind(this);
+    this.showToolTip = this.showToolTip.bind(this);
+    this.hideToolTip = this.hideToolTip.bind(this);
+    //this.parseDate = this.parseDate.bind(this);
     this.state = {
       web3Provider: {
         web3: null,
@@ -46,7 +48,8 @@ export default class App extends PureComponent {
       noAmount: 0,
       invalidAmount: 0,
       selectedMarket: null,
-      isShowPools: false
+      isShowPools: false,
+      isShowToolTip: false
     };
   }
 
@@ -88,16 +91,16 @@ export default class App extends PureComponent {
     }    
   }
 
-  parseDate(params) {
-    let unix_timestamp = parseInt(params);
-    let a = new Date(unix_timestamp * 1000);
-    let months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    let year = a.getFullYear();
-    let month = months[a.getMonth()];
-    let date = a.getDate();
-    let time = date + ' ' + month + ' ' + year;
-    return time;
-  }
+  // parseDate(params) {
+  //   let unix_timestamp = parseInt(params);
+  //   let a = new Date(unix_timestamp * 1000);
+  //   let months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  //   let year = a.getFullYear();
+  //   let month = months[a.getMonth()];
+  //   let date = a.getDate();
+  //   let time = date + ' ' + month + ' ' + year;
+  //   return time;
+  // }
 
   metaMaskConnected() {
     this.setState({ web3Provider: metaMaskStore.getWeb3() }, () => {
@@ -1353,6 +1356,15 @@ export default class App extends PureComponent {
       );
     }
   };
+
+  showToolTip() {
+    this.setState({isShowToolTip: true})
+  }
+
+  hideToolTip() {
+    this.setState({isShowToolTip: false})
+  }
+
   render() {
     return (
       <Container className="p-3 mainContainer">
@@ -1449,36 +1461,31 @@ export default class App extends PureComponent {
                       ))}
                     </Form.Control>
 
-                    <OverlayTrigger
-                      placement={"right"}                    
-                      overlay={
-                        <Tooltip id="tooltip">
-                          {
-                            this.state.selectedMarket && 
-                              <>
-                                <div className="tooltip-item">
-                                  <h5>Market title: </h5>
-                                  <p>{this.state.selectedMarket.extraInfo.description}</p>
-                                </div>
-                                <div className="tooltip-item">
-                                  <h5>Market Description: </h5>
-                                  <p>{this.state.selectedMarket.extraInfo.longDescription}</p>
-                                </div>
-                                <div className="tooltip-item">
-                                  <h5>Expiration date: </h5>
-                                  <p>{this.parseDate(this.state.selectedMarket.endTime)}</p>
-                                </div>
-                                <div className="tooltip-item">
-                                  <h5>Market ID: </h5>
-                                  <p>{this.state.selectedMarket.address}</p>
-                                </div>
-                              </>
-                          }
-                        </Tooltip>
+                    <div onMouseEnter={this.showToolTip}
+                        onMouseLeave={this.hideToolTip} className="market-info-part">
+                      {this.state.selectedMarket && <FontAwesomeIcon icon="info-circle"/>}
+                      {
+                        this.state.selectedMarket && this.state.isShowToolTip &&
+                          <div className="custom-tooltip">
+                            <div className="tooltip-item">
+                              <h5>Market title: </h5>
+                              <p>{this.state.selectedMarket.extraInfo.description}</p>
+                            </div>
+                            <div className="tooltip-item">
+                              <h5>Market Description: </h5>
+                              <p>{this.state.selectedMarket.extraInfo.longDescription}</p>
+                            </div>
+                            <div className="tooltip-item">
+                              <h5>Expiration date: </h5>
+                              <p>{this.timeConverter(this.state.selectedMarket.endTime)}</p>
+                            </div>
+                            <div className="tooltip-item">
+                              <h5>Market ID: </h5>
+                              <p>{this.state.selectedMarket.address}</p>
+                            </div>
+                          </div>
                       }
-                    >
-                      <FontAwesomeIcon icon="info-circle"/>
-                    </OverlayTrigger>                    
+                    </div>                                   
                   </div>
                   <Row>
                     <Col xs={8}>
@@ -1511,10 +1518,10 @@ export default class App extends PureComponent {
               <tr>
                 <th className="market-column">Market</th>
                 <th className="holdings-column">
-                  My Shares <span class="faded">(ERC1155)</span>
+                  My Shares <span className="faded">(ERC1155)</span>
                 </th>
                 <th className="holdings-column">
-                  My Tokens <span class="faded">(ERC20)</span>
+                  My Tokens <span className="faded">(ERC20)</span>
                 </th>
                 <th>Convert / Redeem</th>
               </tr>
