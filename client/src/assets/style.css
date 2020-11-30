@@ -261,6 +261,7 @@ td {
   border: 1px solid white;
   border-radius: 10px;
   min-width: 300px !important;
+  display: block;
 }
 
 .custom-tooltip {
@@ -323,4 +324,27 @@ td {
 
 .modal-body .row .col-6 .tooltip-item img {
   width: 50px;
+}
+
+.market-info-part {
+  position: relative;
+  padding: 10px;
+}
+
+.market-info-part svg {
+  cursor: pointer;
+}
+
+.custom-tooltip {
+  position: absolute;
+  top: -10px;
+  left: 30px;
+  min-width: 250px;
+  background-color: #6e6f70;
+  border-radius: 8px;
+  border: 1px solid white;
+}
+
+.custom-tooltip .tooltip-item p {
+  line-break: anywhere;
 }
