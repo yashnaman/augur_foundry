@@ -1287,8 +1287,8 @@ export default class App extends PureComponent {
     });
   };
   timeConverter(UNIX_timestamp) {
-    var a = new Date(UNIX_timestamp * 1000);
-    var time = a.toLocaleString("en-US", { timeZoneName: "short" });
+    var a = new Date(UNIX_timestamp * 1000);    
+    var time = a.toLocaleString("en-US", {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: "short"});
     return time;
   }
   showMarketInfoOnHover(marketId) {
