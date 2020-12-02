@@ -1466,7 +1466,7 @@ export default class App extends PureComponent {
                         this.state.selectedMarket && this.state.isShowToolTip &&
                           <div className="custom-tooltip">
                             <div className="tooltip-item">
-                              <h5>Market title: </h5>
+                              <h5>Market Title: </h5>
                               <p>{this.state.selectedMarket.extraInfo.description}</p>
                             </div>
                             <div className="tooltip-item">
@@ -1474,7 +1474,7 @@ export default class App extends PureComponent {
                               <p>{this.state.selectedMarket.extraInfo.longDescription}</p>
                             </div>
                             <div className="tooltip-item">
-                              <h5>Expiration date: </h5>
+                              <h5>Expiration Date: </h5>
                               <p>{this.timeConverter(this.state.selectedMarket.endTime)}</p>
                             </div>
                             <div className="tooltip-item">

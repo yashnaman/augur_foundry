@@ -281,6 +281,7 @@ td {
 .tooltip-item p {
   margin: 0px !important;
   line-break: auto;
+  word-break: normal !important; 
 }
 
 .modal-body .row {
@@ -339,12 +340,11 @@ td {
   position: absolute;
   top: -100px;
   left: 30px;
-  min-width: 400px;
+  min-width: 500px;
   background-color: #6e6f70;
   border-radius: 8px;
   border: 1px solid white;
 }
 
 .custom-tooltip .tooltip-item p {
-  line-break: anywhere;
 }
