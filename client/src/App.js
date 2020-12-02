@@ -19,7 +19,7 @@ import markets from "./configs/markets/markets-mainnet.json";
 import contracts from "./configs/contracts.json";
 import environment from "./configs/environments/environment-mainnet.json";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { notification } from "antd";
 import "antd/dist/antd.css";
@@ -49,7 +49,7 @@ export default class App extends PureComponent {
       invalidAmount: 0,
       selectedMarket: null,
       isShowPools: false,
-      isShowToolTip: false
+      isShowToolTip: false,
     };
   }
 
@@ -81,14 +81,16 @@ export default class App extends PureComponent {
   }
 
   setMarket(e) {
-    if(e.target.value == 0) {
-      this.setState({selectedMarket: null})
+    if (e.target.value == 0) {
+      this.setState({ selectedMarket: null });
     } else {
-      let currentMarket = markets.find(item => item.address === e.target.value);
+      let currentMarket = markets.find(
+        (item) => item.address === e.target.value
+      );
       this.setState({
-        selectedMarket: currentMarket
+        selectedMarket: currentMarket,
       });
-    }    
+    }
   }
 
   // parseDate(params) {
@@ -260,14 +262,14 @@ export default class App extends PureComponent {
   };
 
   hidePoolsModal = () => {
-    this.setState({ isShowPools: false});
+    this.setState({ isShowPools: false });
   };
 
   showPoolsModal = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({ isShowPools: true});
-  }
+    this.setState({ isShowPools: true });
+  };
 
   async invetoryInit() {
     const { web3 } = this.state.web3Provider;
@@ -321,8 +323,8 @@ export default class App extends PureComponent {
       // console.log(x);
       let isMarketsToBeDisplayed = isMoreThanZeroERC20s || isMoreThanZeroShares;
       console.log("displayOfMarket", x, isMarketsToBeDisplayed);
-      if (isMarketsToBeDisplayed) {
-        // if (true) {
+      // if (isMarketsToBeDisplayed) {
+      if (true) {
         listData.push(
           <tr>
             <OverlayTrigger
@@ -887,11 +889,7 @@ export default class App extends PureComponent {
           return;
         }
 
-        this.openNotification(
-          "info",
-          "Redeeming your shares for DAI",
-          ""
-        );
+        this.openNotification("info", "Redeeming your shares for DAI", "");
         shareToken.methods
           .sellCompleteSets(
             marketAddress,
@@ -1285,8 +1283,15 @@ export default class App extends PureComponent {
     });
   };
   timeConverter(UNIX_timestamp) {
-    var a = new Date(UNIX_timestamp * 1000);    
-    var time = a.toLocaleString("en-US", {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: "short"});
+    var a = new Date(UNIX_timestamp * 1000);
+    var time = a.toLocaleString("en-US", {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
     return time;
   }
   showMarketInfoOnHover(marketId) {
@@ -1356,11 +1361,11 @@ export default class App extends PureComponent {
   };
 
   showToolTip() {
-    this.setState({isShowToolTip: true})
+    this.setState({ isShowToolTip: true });
   }
 
   hideToolTip() {
-    this.setState({isShowToolTip: false})
+    this.setState({ isShowToolTip: false });
   }
 
   render() {
@@ -1450,7 +1455,12 @@ export default class App extends PureComponent {
               <Jumbotron className="dropdownMarket">
                 <Form onSubmit={this.mintDaiForm}>
                   <div className="with-info">
-                    <Form.Control as="select" custom name="marketIds" onChange={this.setMarket}>
+                    <Form.Control
+                      as="select"
+                      custom
+                      name="marketIds"
+                      onChange={this.setMarket}
+                    >
                       <option value={0}>Select Market</option>
                       {markets.map((i) => (
                         <option value={i.address} key={i.address}>
@@ -1459,31 +1469,46 @@ export default class App extends PureComponent {
                       ))}
                     </Form.Control>
 
-                    <div onMouseEnter={this.showToolTip}
-                        onMouseLeave={this.hideToolTip} className="market-info-part">
-                      {this.state.selectedMarket && <FontAwesomeIcon icon="info-circle"/>}
-                      {
-                        this.state.selectedMarket && this.state.isShowToolTip &&
-                          <div className="custom-tooltip">
-                            <div className="tooltip-item">
-                              <h5>Market Title: </h5>
-                              <p>{this.state.selectedMarket.extraInfo.description}</p>
-                            </div>
-                            <div className="tooltip-item">
-                              <h5>Market Description: </h5>
-                              <p>{this.state.selectedMarket.extraInfo.longDescription}</p>
-                            </div>
-                            <div className="tooltip-item">
-                              <h5>Expiration Date: </h5>
-                              <p>{this.timeConverter(this.state.selectedMarket.endTime)}</p>
-                            </div>
-                            <div className="tooltip-item">
-                              <h5>Market ID: </h5>
-                              <p>{this.state.selectedMarket.address}</p>
-                            </div>
+                    <div
+                      onMouseEnter={this.showToolTip}
+                      onMouseLeave={this.hideToolTip}
+                      className="market-info-part"
+                    >
+                      {this.state.selectedMarket && (
+                        <FontAwesomeIcon icon="info-circle" />
+                      )}
+                      {this.state.selectedMarket && this.state.isShowToolTip && (
+                        <div className="custom-tooltip">
+                          <div className="tooltip-item">
+                            <h5>Market Title: </h5>
+                            <p>
+                              {this.state.selectedMarket.extraInfo.description}
+                            </p>
                           </div>
-                      }
-                    </div>                                   
+                          <div className="tooltip-item">
+                            <h5>Market Description: </h5>
+                            <p>
+                              {
+                                this.state.selectedMarket.extraInfo
+                                  .longDescription
+                              }
+                            </p>
+                          </div>
+                          <div className="tooltip-item">
+                            <h5>Expiration Date: </h5>
+                            <p>
+                              {this.timeConverter(
+                                this.state.selectedMarket.endTime
+                              )}
+                            </p>
+                          </div>
+                          <div className="tooltip-item">
+                            <h5>Market ID: </h5>
+                            <p>{this.state.selectedMarket.address}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <Row>
                     <Col xs={8}>
@@ -1573,32 +1598,44 @@ export default class App extends PureComponent {
         </Jumbotron>
 
         <Modal show={this.state.isShowPools} onHide={this.hidePoolsModal}>
-          <Modal.Header closeButton>            
+          <Modal.Header closeButton>
             <Modal.Title>Balancer Pools</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Row>
-              <Col>                
-                <a href="https://pools.balancer.exchange/#/pool/0x6b74fb4e4b3b177b8e95ba9fa4c3a3121d22fbfb/" target="_blank">
+              <Col>
+                <a
+                  href="https://pools.balancer.exchange/#/pool/0x6b74fb4e4b3b177b8e95ba9fa4c3a3121d22fbfb/"
+                  target="_blank"
+                >
                   <h5>yTrump/nTrump/DAI: </h5>
                 </a>
               </Col>
-              <Col>                
-                <a href="https://pools.balancer.exchange/#/pool/0xed0413d19cdf94759bbe3fe9981c4bd085b430cf" target="_blank">
+              <Col>
+                <a
+                  href="https://pools.balancer.exchange/#/pool/0xed0413d19cdf94759bbe3fe9981c4bd085b430cf"
+                  target="_blank"
+                >
                   <h5>nTrump/DAI: </h5>
                 </a>
               </Col>
-              <Col>                
-                <a href="https://pools.balancer.exchange/#/pool/0xea862ffed19a2e5b8ac1b10fe14c88c1b35d4a2c" target="_blank">
+              <Col>
+                <a
+                  href="https://pools.balancer.exchange/#/pool/0xea862ffed19a2e5b8ac1b10fe14c88c1b35d4a2c"
+                  target="_blank"
+                >
                   <h5>yTrump/iTrump: </h5>
                 </a>
               </Col>
               <Col>
-                <a href="https://pools.balancer.exchange/#/pool/0x68c74e157f35a3e40f1b02bba3e6e3827d534059" target="_blank">
+                <a
+                  href="https://pools.balancer.exchange/#/pool/0x68c74e157f35a3e40f1b02bba3e6e3827d534059"
+                  target="_blank"
+                >
                   <h5>yBlue/nBlue/DAI: </h5>
                 </a>
               </Col>
-            </Row>            
+            </Row>
           </Modal.Body>
         </Modal>
       </Container>
