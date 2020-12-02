@@ -48,5 +48,31 @@
     "yesIcon": "https://cloudflare-ipfs.com/ipfs/QmUA2ExuPSRPHepiRqe3VH4oZKHkw6URoNtFB7UqHN8Vgh",
     "noIcon": "https://cloudflare-ipfs.com/ipfs/QmZfAjSUevTSJe5Lqg22vx4zAPGrkafDKz33LJG2GWoAqG",
     "endTime": "1612137600"
+  },
+  {
+    "address": "0x0946A3Eab3d638c606459b0A9F1E76EB5324985F",
+    "extraInfo": {
+      "categories": ["Politics", "US Elections", "Misc"],
+      "description": "Will 45th U.S. president Donald Trump physically attend the 59th U.S. presidential inauguration?",
+      "longDescription": "This market shall resolve as YES if and only if Donald Trump, the 45th U.S. president, physically attends the 59th U.S. presidential inauguration ceremony, scheduled for January 20th, 2021 at market creation time. The resolution of this market shall be based on general knowledge, as the ceremony has historically been widely covered by a number of media outlets, including video records.",
+      "_scalarDenomination": "",
+      "offsetName": null,
+      "template": null
+    },
+    "YesTokenAddress": "0x934E03e671E09528A52cb3373dc7Bb7CA475b924",
+    "NoTokenAddress": "0x55b2969a6D832c6091Ba1AF4ed6d0E6E7c2C0d90",
+    "invalidTokenAddress": "0x8ee4Fc14a3fb92E998D86c29C92097047f424BB1",
+    "yesTokenId": "4195626244004957307616641603103113524208530174739062629287202069488764715008",
+    "noTokenId": "4195626244004957307616641603103113524208530174738753144277380724420039933952",
+    "invalidTokenId": "4195626244004957307616641603103113524208530174738443659267559379351315152896",
+    "yesName": "YES Trump at Inauguration Token",
+    "noName": "NO Trump at Inauguration Token",
+    "invalidName": "INVALID Trump at Inauguration Token",
+    "yesSymbol": "yINAUG",
+    "noSymbol": "nINAUG",
+    "invalidSymbol": "iINAUG",
+    "yesIcon": "https://cloudflare-ipfs.com/ipfs/QmUA2ExuPSRPHepiRqe3VH4oZKHkw6URoNtFB7UqHN8Vgh",
+    "noIcon": "https://cloudflare-ipfs.com/ipfs/QmZfAjSUevTSJe5Lqg22vx4zAPGrkafDKz33LJG2GWoAqG",
+    "endTime": "1613952000"
   }
 ]
