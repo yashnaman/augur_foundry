@@ -74,5 +74,31 @@
     "yesIcon": "https://cloudflare-ipfs.com/ipfs/Qmc14RQHBa9zezBYERJqMDAknkfmC14VN8coPz9KYiMKMU",
     "noIcon": "https://cloudflare-ipfs.com/ipfs/QmPPHjD2wYJzs46kfYrGFsELLj2a2NQjiKWtoHTs1yVvfF",
     "endTime": "1611273600"
+  },
+  {
+    "address": "0x9acBF499d2bc7A4b60643e852807928D7fA4Ee01",
+    "extraInfo": {
+      "categories": ["Crypto", "Policy", "Misc"],
+      "description": "By January 21st, 2021 at 00:00 UTC, will the U.S. Department of the Treasury announce that crypto exchanges will be required to verify the identity of withdrawal address owners?",
+      "longDescription": "This market shall resolve to YES if and only if by January 21st, 2021 at 00:00 UTC, the U.S. Department of the Treasury, through any of its communication channels or those of its bureaus, communicates that they will be requiring one or more cryptocurrency exchanges to verify the identity of the owner of the addresses specified by a user for a cryptocurrency withdrawal operation, or otherwise enforces that rule by either suing exchanges or fining them for noncompliance. The ruling(s) does not have to specify any withdrawal limit. For example, if such a rule is announced or enforced only for withdrawals above 250 USD worth of cryptocurrencies, the market will resolve as YES. Similarly, the rule need not apply to all withdrawals. For example, if it is required to verify the identity only for addresses which are not affiliated to any custodian but not for withdrawals to addresses controlled by known custodians, or if the requirement only applies to addresses of a specific cryptocurrency the market shall still resolve as YES. The market shall also resolve as YES if only one specific class of exchanges is targeted, e.g. only exchanges operating within the U.S. For the purpose of this market, communications from individually owned social media accounts will not affect market resolution. For example, if the Secretary of Treasury uses his personal Twitter account to announce something but that information is not reflected in official communication channels from the U.S. Treasury, the market shall resolve as NO. For informational purposes, communications from the U.S. Treasury may be found in the news section of their website, located at https://home.treasury.gov/ at the time of market creation, on their official social media accounts, or on the official websites or social media accounts of their Bureaus, for example, FinCEN, whose website is located at https://www.fincen.gov/ at the time of market creation.",
+      "_scalarDenomination": "",
+      "offsetName": null,
+      "template": null
+    },
+    "YesTokenAddress": "0x14de81C71B3F73874659082b971433514E201B27",
+    "NoTokenAddress": "0x4B1d7644C538389A7a718092Aa8E28bE348eB917",
+    "invalidTokenAddress": "0x285374D4aaaB21002168d80701d98284dF5C3747",
+    "yesTokenId": "70016536809146609284188003007244729782616992081897885265085964863514980909056",
+    "noTokenId": "70016536809146609284188003007244729782616992081897575780076143518446256128000",
+    "invalidTokenId": "70016536809146609284188003007244729782616992081897266295066322173377531346944",
+    "yesName": "YES KYC Token",
+    "noName": "NO KYC Token",
+    "invalidName": "INVALID KYC Token",
+    "yesSymbol": "yKYC",
+    "noSymbol": "nKYC",
+    "invalidSymbol": "iKYC",
+    "yesIcon": "",
+    "noIcon": "",
+    "endTime": "1611273600"
   }
 ]
